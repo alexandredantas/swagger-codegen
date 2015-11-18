@@ -520,15 +520,19 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <repositories>
+    
+    <distributionManagement>
         <repository>
-            <id>sonatype-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <id>central</id>
+            <url>http://fdnserverqa.no-ip.info/artifactory/ext-release-local/</url>
         </repository>
-    </repositories>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <uniqueVersion>true</uniqueVersion>
+            <url>http://fdnserverqa.no-ip.info/artifactory/ext-snapshot-local/</url>
+        </snapshotRepository>
+    </distributionManagement>
+    
     <properties>
         <swagger-parser-version>1.0.12</swagger-parser-version>
         <scala-version>2.11.1</scala-version>

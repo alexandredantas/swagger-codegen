@@ -3,6 +3,11 @@
          xmlns="http://java.sun.com/xml/ns/javaee"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
+    <filter>
+        <filter-name>ApiOriginFilter</filter-name>
+        <filter-class>io.swagger.generator.util.ApiOriginFilter</filter-class>
+    </filter>
+    
     <servlet>
         <servlet-name>jersey</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -28,20 +33,10 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
-
-    <servlet-mapping>
-        <servlet-name>jersey</servlet-name>
-        <url-pattern>/api/*</url-pattern>
-    </servlet-mapping>
-
-    <filter>
-        <filter-name>ApiOriginFilter</filter-name>
-        <filter-class>io.swagger.generator.util.ApiOriginFilter</filter-class>
-    </filter>
+    
     <servlet>
         <servlet-name>Bootstrap</servlet-name>
         <servlet-class>io.swagger.generator.Bootstrap</servlet-class>
-        <load-on-startup>2</load-on-startup>
         <init-param>
             <param-name>generator.host</param-name>
             <param-value>localhost:8001</param-value>
@@ -50,7 +45,14 @@
             <param-name>generator.protocol</param-name>
             <param-value>http</param-value>
         </init-param>
+        <load-on-startup>2</load-on-startup>
     </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>jersey</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+    
     <filter-mapping>
         <filter-name>ApiOriginFilter</filter-name>
         <url-pattern>/*</url-pattern>

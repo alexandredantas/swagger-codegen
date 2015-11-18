@@ -67,7 +67,7 @@
 
         <dependency>
             <groupId>io.swagger</groupId>
-            <artifactId>swagger-codegen</artifactId>
+            <artifactId>swagger-codegen-custom</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!--https://github.com/airlift/airline-->
