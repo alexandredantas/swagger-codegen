@@ -10,10 +10,10 @@ import java.util.Set;
 
 public class CodegenOperation {
     public final List<CodegenProperty> responseHeaders = new ArrayList<CodegenProperty>();
-    public Boolean hasAuthMethods, hasConsumes, hasProduces, hasParams, returnTypeIsPrimitive,
-            returnSimpleType, subresourceOperation, isMapContainer, isListContainer,
-            hasMore = Boolean.TRUE, isMultipart, isResponseBinary = Boolean.FALSE,
-            hasReference = Boolean.FALSE;
+    public Boolean hasAuthMethods, hasConsumes, hasProduces, hasParams, hasOptionalParams,
+            returnTypeIsPrimitive, returnSimpleType, subresourceOperation, isMapContainer,
+            isListContainer, isMultipart, hasMore = Boolean.TRUE,
+            isResponseBinary = Boolean.FALSE, hasReference = Boolean.FALSE;
     public String path, operationId, returnType, httpMethod, returnBaseType,
             returnContainer, summary, notes, baseName, defaultResponse;
     public List<Map<String, String>> consumes, produces;
@@ -38,7 +38,7 @@ public class CodegenOperation {
      *
      * @return true if parameter exists, false otherwise
      */
-    private boolean nonempty(List<CodegenParameter> params) {
+    private static boolean nonempty(List<CodegenParameter> params) {
         return params != null && params.size() > 0;
     }
 

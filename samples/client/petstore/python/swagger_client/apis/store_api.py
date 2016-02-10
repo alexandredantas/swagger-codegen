@@ -2,7 +2,7 @@
 
 """
 StoreApi.py
-Copyright 2015 SmartBear Software
+Copyright 2016 SmartBear Software
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ class StoreApi(object):
             params[key] = val
         del params['kwargs']
 
+
         resource_path = '/store/inventory'.replace('{format}', 'json')
         method = 'GET'
 
@@ -87,7 +88,7 @@ class StoreApi(object):
 
         header_params = {}
 
-        form_params = {}
+        form_params = []
         files = {}
 
         body_params = None
@@ -151,6 +152,7 @@ class StoreApi(object):
             params[key] = val
         del params['kwargs']
 
+
         resource_path = '/store/order'.replace('{format}', 'json')
         method = 'POST'
 
@@ -160,7 +162,7 @@ class StoreApi(object):
 
         header_params = {}
 
-        form_params = {}
+        form_params = []
         files = {}
 
         body_params = None
@@ -212,9 +214,6 @@ class StoreApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        # verify the required parameter 'order_id' is set
-        if order_id is None:
-            raise ValueError("Missing the required parameter `order_id` when calling `get_order_by_id`")
 
         all_params = ['order_id']
         all_params.append('callback')
@@ -229,6 +228,10 @@ class StoreApi(object):
             params[key] = val
         del params['kwargs']
 
+        # verify the required parameter 'order_id' is set
+        if ('order_id' not in params) or (params['order_id'] is None):
+            raise ValueError("Missing the required parameter `order_id` when calling `get_order_by_id`")
+
         resource_path = '/store/order/{orderId}'.replace('{format}', 'json')
         method = 'GET'
 
@@ -240,7 +243,7 @@ class StoreApi(object):
 
         header_params = {}
 
-        form_params = {}
+        form_params = []
         files = {}
 
         body_params = None
@@ -290,9 +293,6 @@ class StoreApi(object):
                  If the method is called asynchronously,
                  returns the request thread.
         """
-        # verify the required parameter 'order_id' is set
-        if order_id is None:
-            raise ValueError("Missing the required parameter `order_id` when calling `delete_order`")
 
         all_params = ['order_id']
         all_params.append('callback')
@@ -307,6 +307,10 @@ class StoreApi(object):
             params[key] = val
         del params['kwargs']
 
+        # verify the required parameter 'order_id' is set
+        if ('order_id' not in params) or (params['order_id'] is None):
+            raise ValueError("Missing the required parameter `order_id` when calling `delete_order`")
+
         resource_path = '/store/order/{orderId}'.replace('{format}', 'json')
         method = 'DELETE'
 
@@ -318,7 +322,7 @@ class StoreApi(object):
 
         header_params = {}
 
-        form_params = {}
+        form_params = []
         files = {}
 
         body_params = None
