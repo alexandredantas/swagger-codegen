@@ -9,8 +9,8 @@ public class App extends Application{
     @Override
     public Set<Class<?>> getClasses() {
 	Set<Class<?>> classes = new HashSet<>();
-
-	//TODO: add resource classes to hashset
+	{{#apiClasses}}
+        classes.add({{.}}.class);{{/apiClasses}}
 
         return classes;
     }

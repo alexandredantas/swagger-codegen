@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenConfig {
     protected String invokerPackage = "io.swagger.api";
@@ -22,10 +23,12 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
     protected String artifactId = "swagger-jaxrs-server";
     protected String artifactVersion = "1.0.0";
     protected String title = "Swagger Server";
+    private Set<String> apiClasses;
 
     public JaxRSServerUndertow() {
         super.processOpts();
 
+        this.apiClasses = new HashSet<String>();
         sourceFolder = "src/gen/java";
 
         outputFolder = System.getProperty("swagger.codegen.jaxrs.genfolder", "generated-code/javaJaxRS");
@@ -132,9 +135,11 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
         co.baseName = basePath;
     }
 
+    @Override
     public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
         Map<String, Object> operations = (Map<String, Object>) objs.get("operations");
         if (operations != null) {
+            this.apiClasses.add(operations.get("classname").toString());
             List<CodegenOperation> ops = (List<CodegenOperation>) operations.get("operation");
             for (CodegenOperation operation : ops) {
                 if (operation.returnType == null) {
@@ -164,6 +169,12 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
             }
         }
         return objs;
+    }
+
+    @Override
+    public Map<String, Object> postProcessSupportingFileData(Map<String, Object> objs) {
+        objs.put("apiClasses", this.apiClasses);
+        return super.postProcessSupportingFileData(objs); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
