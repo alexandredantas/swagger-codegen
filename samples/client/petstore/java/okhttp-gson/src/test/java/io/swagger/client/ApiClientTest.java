@@ -78,15 +78,28 @@ public class ApiClientTest {
     }
 
     @Test
+    public void testIsJsonMime() {
+      assertFalse(apiClient.isJsonMime(null));
+      assertFalse(apiClient.isJsonMime(""));
+      assertFalse(apiClient.isJsonMime("text/plain"));
+      assertFalse(apiClient.isJsonMime("application/xml"));
+      assertFalse(apiClient.isJsonMime("application/jsonp"));
+
+      assertTrue(apiClient.isJsonMime("application/json"));
+      assertTrue(apiClient.isJsonMime("application/json; charset=UTF8"));
+      assertTrue(apiClient.isJsonMime("APPLICATION/JSON"));
+    }
+
+    @Test
     public void testSelectHeaderAccept() {
-        String[] accepts = {"APPLICATION/JSON", "APPLICATION/XML"};
+        String[] accepts = {"application/json", "application/xml"};
         assertEquals("application/json", apiClient.selectHeaderAccept(accepts));
 
-        accepts = new String[]{"application/json", "application/xml"};
-        assertEquals("application/json", apiClient.selectHeaderAccept(accepts));
+        accepts = new String[]{"APPLICATION/XML", "APPLICATION/JSON"};
+        assertEquals("APPLICATION/JSON", apiClient.selectHeaderAccept(accepts));
 
-        accepts = new String[]{"application/xml", "application/json"};
-        assertEquals("application/json", apiClient.selectHeaderAccept(accepts));
+        accepts = new String[]{"application/xml", "application/json; charset=UTF8"};
+        assertEquals("application/json; charset=UTF8", apiClient.selectHeaderAccept(accepts));
 
         accepts = new String[]{"text/plain", "application/xml"};
         assertEquals("text/plain,application/xml", apiClient.selectHeaderAccept(accepts));
@@ -97,14 +110,14 @@ public class ApiClientTest {
 
     @Test
     public void testSelectHeaderContentType() {
-        String[] contentTypes = {"APPLICATION/JSON", "APPLICATION/XML"};
+        String[] contentTypes = {"application/json", "application/xml"};
         assertEquals("application/json", apiClient.selectHeaderContentType(contentTypes));
 
-        contentTypes = new String[]{"application/json", "application/xml"};
-        assertEquals("application/json", apiClient.selectHeaderContentType(contentTypes));
+        contentTypes = new String[]{"APPLICATION/JSON", "APPLICATION/XML"};
+        assertEquals("APPLICATION/JSON", apiClient.selectHeaderContentType(contentTypes));
 
-        contentTypes = new String[]{"application/xml", "application/json"};
-        assertEquals("application/json", apiClient.selectHeaderContentType(contentTypes));
+        contentTypes = new String[]{"application/xml", "application/json; charset=UTF8"};
+        assertEquals("application/json; charset=UTF8", apiClient.selectHeaderContentType(contentTypes));
 
         contentTypes = new String[]{"text/plain", "application/xml"};
         assertEquals("text/plain", apiClient.selectHeaderContentType(contentTypes));
@@ -169,6 +182,19 @@ public class ApiClientTest {
         // reset values
         auth.setApiKey(null);
         auth.setApiKeyPrefix(null);
+    }
+
+    @Test
+    public void testGetAndSetConnectTimeout() {
+        // connect timeout defaults to 10 seconds
+        assertEquals(10000, apiClient.getConnectTimeout());
+        assertEquals(10000, apiClient.getHttpClient().getConnectTimeout());
+
+        apiClient.setConnectTimeout(0);
+        assertEquals(0, apiClient.getConnectTimeout());
+        assertEquals(0, apiClient.getHttpClient().getConnectTimeout());
+
+        apiClient.setConnectTimeout(10000);
     }
 
     @Test
@@ -250,5 +276,18 @@ public class ApiClientTest {
             // must equal input values
             assertEquals(values.size(), pairValueSplit.length);
         }
+    }
+
+    @Test
+    public void testSanitizeFilename() {
+        assertEquals("sun", apiClient.sanitizeFilename("sun"));
+        assertEquals("sun.gif", apiClient.sanitizeFilename("sun.gif"));
+        assertEquals("sun.gif", apiClient.sanitizeFilename("../sun.gif"));
+        assertEquals("sun.gif", apiClient.sanitizeFilename("/var/tmp/sun.gif"));
+        assertEquals("sun.gif", apiClient.sanitizeFilename("./sun.gif"));
+        assertEquals("sun.gif", apiClient.sanitizeFilename("..\\sun.gif"));
+        assertEquals("sun.gif", apiClient.sanitizeFilename("\\var\\tmp\\sun.gif"));
+        assertEquals("sun.gif", apiClient.sanitizeFilename("c:\\var\\tmp\\sun.gif"));
+        assertEquals("sun.gif", apiClient.sanitizeFilename(".\\sun.gif"));
     }
 }

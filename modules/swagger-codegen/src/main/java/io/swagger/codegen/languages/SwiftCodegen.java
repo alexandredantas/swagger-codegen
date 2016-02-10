@@ -40,19 +40,22 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
   protected static final String LIBRARY_PROMISE_KIT = "PromiseKit";
   protected static final String[] RESPONSE_LIBRARIES = { LIBRARY_PROMISE_KIT };
   protected String projectName = "SwaggerClient";
-  protected boolean unwrapRequired = false;
+  protected boolean unwrapRequired;
   protected String[] responseAs = new String[0];
   protected String sourceFolder = "Classes" + File.separator + "Swaggers";
   private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{[a-zA-Z_]+\\}");
 
+  @Override
   public CodegenType getTag() {
     return CodegenType.CLIENT;
   }
 
+  @Override
   public String getName() {
     return "swift";
   }
 
+  @Override
   public String getHelp() {
     return "Generates a swift client library.";
   }
@@ -74,7 +77,8 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         "Bool",
         "Void",
         "String",
-        "Character")
+        "Character",
+        "AnyObject")
     );
     defaultIncludes = new HashSet<String>(
       Arrays.asList(
@@ -115,8 +119,11 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     typeMapping.put("float", "Float");
     typeMapping.put("number", "Double");
     typeMapping.put("double", "Double");
-    typeMapping.put("object", "String");
+    typeMapping.put("object", "AnyObject");
     typeMapping.put("file", "NSURL");
+    //TODO binary should be mapped to byte array
+    // mapped to String as a workaround
+    typeMapping.put("binary", "String");
 
     importMapping = new HashMap<String, String>();
 
@@ -182,7 +189,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
 
   @Override
   public String escapeReservedWord(String name) {
-    return "Swagger" + name;  // add an underscore to the name
+    return "_" + name;  // add an underscore to the name
   }
 
   @Override
@@ -257,13 +264,18 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
       codegenProperty.allowableValues.put("values", swiftEnums);
       codegenProperty.datatypeWithEnum =
               StringUtils.left(codegenProperty.datatypeWithEnum, codegenProperty.datatypeWithEnum.length() - "Enum".length());
-      if (reservedWords.contains(codegenProperty.datatypeWithEnum)) {
+      // Ensure that the enum type doesn't match a reserved word or
+      // the variable name doesn't match the generated enum type or the
+      // Swift compiler will generate an error
+      if (reservedWords.contains(codegenProperty.datatypeWithEnum) ||
+          name.equals(codegenProperty.datatypeWithEnum)) {
         codegenProperty.datatypeWithEnum = escapeReservedWord(codegenProperty.datatypeWithEnum);
       }
     }
     return codegenProperty;
   }
 
+    @SuppressWarnings("static-method")
     public String toSwiftyEnumName(String value) {
         // Prevent from breaking properly cased identifier
         if (value.matches("[A-Z][a-z0-9]+[a-zA-Z0-9]*")) {
@@ -283,7 +295,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
 
   @Override
   public CodegenOperation fromOperation(String path, String httpMethod, Operation operation, Map<String, Model> definitions, Swagger swagger) {
-    path = normalizePath(path);
+    path = normalizePath(path); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
     List<Parameter> parameters = operation.getParameters();
     parameters = Lists.newArrayList(Iterators.filter(parameters.iterator(), new Predicate<Parameter>() {
       @Override

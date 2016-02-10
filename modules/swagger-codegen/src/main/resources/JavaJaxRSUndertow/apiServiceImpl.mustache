@@ -2,20 +2,16 @@ package {{package}}.impl;
 
 import {{package}}.*;
 import {{modelPackage}}.*;
-
+import javax.ws.rs.core.Response;
+import {{package}}.NotFoundException;
 {{#imports}}import {{import}};
 {{/imports}}
-
-import {{package}}.NotFoundException;
-
-import javax.ws.rs.core.Response;
 
 {{#operations}}
 public class {{classname}}ServiceImpl extends {{classname}}Service {
   {{#operation}}
       @Override
-      public Response {{nickname}}({{#allParams}}{{>serviceQueryParams}}{{>servicePathParams}}{{>serviceHeaderParams}}{{>serviceBodyParams}}{{>serviceFormParams}}{{#hasMore}},{{/hasMore}}{{/allParams}})
-      throws NotFoundException {
+      public Response {{nickname}}({{#allParams}}{{>serviceQueryParams}}{{>servicePathParams}}{{>serviceHeaderParams}}{{>serviceBodyParams}}{{>serviceFormParams}}{{#hasMore}},{{/hasMore}}{{/allParams}}) throws NotFoundException {
       // do some magic!
       return Response.ok().entity("magic!").build();
   }

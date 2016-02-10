@@ -52,14 +52,14 @@ extension PetstoreClientAPI {
   "petId" : 123456789,
   "quantity" : 123,
   "id" : 123456789,
-  "shipDate" : "2015-11-11T12:31:12.079+0000",
+  "shipDate" : "2016-02-07T13:55:23.709+0000",
   "complete" : true,
   "status" : "aeiou"
 }}, {contentType=application/xml, example=<Order>
   <id>123456</id>
   <petId>123456</petId>
   <quantity>0</quantity>
-  <shipDate>2015-11-11T14:31:12.082Z</shipDate>
+  <shipDate>2016-02-07T05:55:23.712Z</shipDate>
   <status>string</status>
   <complete>true</complete>
 </Order>}]
@@ -67,14 +67,14 @@ extension PetstoreClientAPI {
   "petId" : 123456789,
   "quantity" : 123,
   "id" : 123456789,
-  "shipDate" : "2015-11-11T12:31:12.079+0000",
+  "shipDate" : "2016-02-07T13:55:23.709+0000",
   "complete" : true,
   "status" : "aeiou"
 }}, {contentType=application/xml, example=<Order>
   <id>123456</id>
   <petId>123456</petId>
   <quantity>0</quantity>
-  <shipDate>2015-11-11T14:31:12.082Z</shipDate>
+  <shipDate>2016-02-07T05:55:23.712Z</shipDate>
   <status>string</status>
   <complete>true</complete>
 </Order>}]
@@ -104,14 +104,14 @@ extension PetstoreClientAPI {
   "petId" : 123456789,
   "quantity" : 123,
   "id" : 123456789,
-  "shipDate" : "2015-11-11T12:31:12.083+0000",
+  "shipDate" : "2016-02-07T13:55:23.713+0000",
   "complete" : true,
   "status" : "aeiou"
 }}, {contentType=application/xml, example=<Order>
   <id>123456</id>
   <petId>123456</petId>
   <quantity>0</quantity>
-  <shipDate>2015-11-11T14:31:12.083Z</shipDate>
+  <shipDate>2016-02-07T05:55:23.713Z</shipDate>
   <status>string</status>
   <complete>true</complete>
 </Order>}]
@@ -119,14 +119,14 @@ extension PetstoreClientAPI {
   "petId" : 123456789,
   "quantity" : 123,
   "id" : 123456789,
-  "shipDate" : "2015-11-11T12:31:12.083+0000",
+  "shipDate" : "2016-02-07T13:55:23.713+0000",
   "complete" : true,
   "status" : "aeiou"
 }}, {contentType=application/xml, example=<Order>
   <id>123456</id>
   <petId>123456</petId>
   <quantity>0</quantity>
-  <shipDate>2015-11-11T14:31:12.083Z</shipDate>
+  <shipDate>2016-02-07T05:55:23.713Z</shipDate>
   <status>string</status>
   <complete>true</complete>
 </Order>}]

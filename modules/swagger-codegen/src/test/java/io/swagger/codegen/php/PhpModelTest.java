@@ -18,6 +18,7 @@ import com.google.common.collect.Sets;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("static-method")
 public class PhpModelTest {
 
     @Test(description = "convert a simple php model")
@@ -42,7 +43,7 @@ public class PhpModelTest {
         Assert.assertEquals(property1.baseName, "id");
         Assert.assertEquals(property1.datatype, "int");
         Assert.assertEquals(property1.name, "id");
-        Assert.assertEquals(property1.defaultValue, "null");
+        Assert.assertEquals(property1.defaultValue, null);
         Assert.assertEquals(property1.baseType, "int");
         Assert.assertTrue(property1.hasMore);
         Assert.assertTrue(property1.required);
@@ -53,7 +54,7 @@ public class PhpModelTest {
         Assert.assertEquals(property2.baseName, "name");
         Assert.assertEquals(property2.datatype, "string");
         Assert.assertEquals(property2.name, "name");
-        Assert.assertEquals(property2.defaultValue, "null");
+        Assert.assertEquals(property2.defaultValue, null);
         Assert.assertEquals(property2.baseType, "string");
         Assert.assertTrue(property2.hasMore);
         Assert.assertTrue(property2.required);
@@ -65,7 +66,7 @@ public class PhpModelTest {
         Assert.assertEquals(property3.complexType, "\\DateTime");
         Assert.assertEquals(property3.datatype, "\\DateTime");
         Assert.assertEquals(property3.name, "created_at");
-        Assert.assertEquals(property3.defaultValue, "null");
+        Assert.assertEquals(property3.defaultValue, null);
         Assert.assertEquals(property3.baseType, "\\DateTime");
         Assert.assertNull(property3.hasMore);
         Assert.assertNull(property3.required);
@@ -92,7 +93,7 @@ public class PhpModelTest {
         Assert.assertEquals(property1.baseName, "id");
         Assert.assertEquals(property1.datatype, "int");
         Assert.assertEquals(property1.name, "id");
-        Assert.assertEquals(property1.defaultValue, "null");
+        Assert.assertEquals(property1.defaultValue, null);
         Assert.assertEquals(property1.baseType, "int");
         Assert.assertTrue(property1.hasMore);
         Assert.assertTrue(property1.required);

@@ -17,61 +17,69 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JaxRSServerCodegen", date = "2015-11-05T22:31:25.130-08:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JaxRSServerCodegen", date = "2016-01-14T21:37:36.074Z")
 public class PetApiServiceImpl extends PetApiService {
   
       @Override
-      public Response updatePet(Pet body)
+      public Response updatePet(Pet body,SecurityContext securityContext)
       throws NotFoundException {
       // do some magic!
       return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
   }
   
       @Override
-      public Response addPet(Pet body)
+      public Response addPet(Pet body,SecurityContext securityContext)
       throws NotFoundException {
       // do some magic!
       return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
   }
   
       @Override
-      public Response findPetsByStatus(List<String> status)
+      public Response findPetsByStatus(List<String> status,SecurityContext securityContext)
       throws NotFoundException {
       // do some magic!
       return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
   }
   
       @Override
-      public Response findPetsByTags(List<String> tags)
+      public Response findPetsByTags(List<String> tags,SecurityContext securityContext)
       throws NotFoundException {
       // do some magic!
       return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
   }
   
       @Override
-      public Response getPetById(Long petId)
+      public Response getPetById(Long petId,SecurityContext securityContext)
       throws NotFoundException {
       // do some magic!
       return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
   }
   
       @Override
-      public Response updatePetWithForm(String petId,String name,String status)
+      public Response updatePetWithForm(String petId,String name,String status,SecurityContext securityContext)
       throws NotFoundException {
       // do some magic!
       return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
   }
   
       @Override
-      public Response deletePet(Long petId,String apiKey)
+      public Response deletePet(Long petId,String apiKey,SecurityContext securityContext)
       throws NotFoundException {
       // do some magic!
       return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
   }
   
       @Override
-      public Response uploadFile(Long petId,String additionalMetadata,FormDataContentDisposition fileDetail)
+      public Response uploadFile(Long petId,String additionalMetadata,InputStream inputStream, FormDataContentDisposition fileDetail,SecurityContext securityContext)
+      throws NotFoundException {
+      // do some magic!
+      return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+  }
+  
+      @Override
+      public Response getPetByIdWithByteArray(Long petId,SecurityContext securityContext)
       throws NotFoundException {
       // do some magic!
       return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();

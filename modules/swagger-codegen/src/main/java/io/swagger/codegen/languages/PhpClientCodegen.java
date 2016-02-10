@@ -6,19 +6,23 @@ import io.swagger.codegen.CodegenConstants;
 import io.swagger.codegen.CodegenType;
 import io.swagger.codegen.DefaultCodegen;
 import io.swagger.codegen.SupportingFile;
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.MapProperty;
-import io.swagger.models.properties.Property;
-import io.swagger.models.properties.RefProperty;
+import io.swagger.models.properties.*;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
+    @SuppressWarnings("hiding")
+    static Logger LOGGER = LoggerFactory.getLogger(PhpClientCodegen.class);
+
     public static final String VARIABLE_NAMING_CONVENTION = "variableNamingConvention";
     public static final String PACKAGE_PATH = "packagePath";
     public static final String SRC_BASE_PATH = "srcBasePath";
@@ -38,13 +42,21 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         outputFolder = "generated-code" + File.separator + "php";
         modelTemplateFiles.put("model.mustache", ".php");
         apiTemplateFiles.put("api.mustache", ".php");
+        modelTestTemplateFiles.put("model_test.mustache", ".php");
+        apiTestTemplateFiles.put("api_test.mustache", ".php");
         embeddedTemplateDir = templateDir = "php";
         apiPackage = invokerPackage + "\\Api";
         modelPackage = invokerPackage + "\\Model";
+        testPackage = invokerPackage + "\\Tests";
 
         reservedWords = new HashSet<String>(
                 Arrays.asList(
-                        "__halt_compiler", "abstract", "and", "array", "as", "break", "callable", "case", "catch", "class", "clone", "const", "continue", "declare", "default", "die", "do", "echo", "else", "elseif", "empty", "enddeclare", "endfor", "endforeach", "endif", "endswitch", "endwhile", "eval", "exit", "extends", "final", "for", "foreach", "function", "global", "goto", "if", "implements", "include", "include_once", "instanceof", "insteadof", "interface", "isset", "list", "namespace", "new", "or", "print", "private", "protected", "public", "require", "require_once", "return", "static", "switch", "throw", "trait", "try", "unset", "use", "var", "while", "xor")
+                    // local variables used in api methods (endpoints)
+                    "resourcePath", "method", "httpBody", "queryParams", "headerParams",
+                    "formParams", "_header_accept", "_tempBody",
+
+                    // PHP reserved words
+                    "__halt_compiler", "abstract", "and", "array", "as", "break", "callable", "case", "catch", "class", "clone", "const", "continue", "declare", "default", "die", "do", "echo", "else", "elseif", "empty", "enddeclare", "endfor", "endforeach", "endif", "endswitch", "endwhile", "eval", "exit", "extends", "final", "for", "foreach", "function", "global", "goto", "if", "implements", "include", "include_once", "instanceof", "insteadof", "interface", "isset", "list", "namespace", "new", "or", "print", "private", "protected", "public", "require", "require_once", "return", "static", "switch", "throw", "trait", "try", "unset", "use", "var", "while", "xor")
         );
 
         // ref: http://php.net/manual/en/language.types.intro.php
@@ -73,7 +85,7 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         String primitives = "'" + StringUtils.join(languageSpecificPrimitives, "', '") + "'";
         additionalProperties.put("primitives", primitives);
 
-        // ref: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#data-types
+        // ref: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types
         typeMapping = new HashMap<String, String>();
         typeMapping.put("integer", "int");
         typeMapping.put("long", "int");
@@ -82,14 +94,14 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         typeMapping.put("string", "string");
         typeMapping.put("byte", "int");
         typeMapping.put("boolean", "bool");
-        typeMapping.put("date", "\\DateTime");
-        typeMapping.put("datetime", "\\DateTime");
+        typeMapping.put("Date", "\\DateTime");
+        typeMapping.put("DateTime", "\\DateTime");
         typeMapping.put("file", "\\SplFileObject");
         typeMapping.put("map", "map");
         typeMapping.put("array", "array");
         typeMapping.put("list", "array");
         typeMapping.put("object", "object");
-        typeMapping.put("DateTime", "\\DateTime");
+        typeMapping.put("binary", "ByteArray");
 
         cliOptions.add(new CliOption(CodegenConstants.MODEL_PACKAGE, CodegenConstants.MODEL_PACKAGE_DESC));
         cliOptions.add(new CliOption(CodegenConstants.API_PACKAGE, CodegenConstants.API_PACKAGE_DESC));
@@ -108,9 +120,9 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     }
 
     public String toPackagePath(String packageName, String basePath) {
-        packageName = packageName.replace(invokerPackage, "");
+        packageName = packageName.replace(invokerPackage, ""); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
         if (basePath != null && basePath.length() > 0) {
-            basePath = basePath.replaceAll("[\\\\/]?$", "") + File.separatorChar;
+            basePath = basePath.replaceAll("[\\\\/]?$", "") + File.separatorChar; // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
         }
 
         String regFirstPathSeparator;
@@ -129,21 +141,24 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
 
         return (getPackagePath() + File.separatorChar + basePath
                     // Replace period, backslash, forward slash with file separator in package name
-                    + packageName.replaceAll("[\\.\\\\/]", File.separator)
+                    + packageName.replaceAll("[\\.\\\\/]", Matcher.quoteReplacement(File.separator))
                     // Trim prefix file separators from package path
                     .replaceAll(regFirstPathSeparator, ""))
                     // Trim trailing file separators from the overall path
                     .replaceAll(regLastPathSeparator+ "$", "");
     }
 
+    @Override
     public CodegenType getTag() {
         return CodegenType.CLIENT;
     }
 
+    @Override
     public String getName() {
         return "php";
     }
 
+    @Override
     public String getHelp() {
         return "Generates a PHP client library.";
     }
@@ -217,11 +232,22 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
 
     @Override
     public String apiFileFolder() {
-        return (outputFolder + "/" + toPackagePath(apiPackage(), srcBasePath));
+        return (outputFolder + "/" + toPackagePath(apiPackage, srcBasePath));
     }
 
+    @Override
     public String modelFileFolder() {
-        return (outputFolder + "/" + toPackagePath(modelPackage(), srcBasePath));
+        return (outputFolder + "/" + toPackagePath(modelPackage, srcBasePath));
+    }
+
+    @Override
+    public String apiTestFileFolder() {
+        return (outputFolder + "/" + toPackagePath(testPackage, srcBasePath));
+    }
+
+    @Override
+    public String modelTestFileFolder() {
+        return (outputFolder + "/" + toPackagePath(testPackage, srcBasePath));
     }
 
     @Override
@@ -270,10 +296,6 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         return toModelName(type);
     }
 
-    public String toDefaultValue(Property p) {
-        return "null";
-    }
-
     public void setInvokerPackage(String invokerPackage) {
         this.invokerPackage = invokerPackage;
     }
@@ -305,7 +327,7 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     @Override
     public String toVarName(String name) {
         // sanitize name
-        name = sanitizeName(name);
+        name = sanitizeName(name); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
 
         if ("camelCase".equals(variableNamingConvention)) {
           // return the name in camelCase style
@@ -335,7 +357,7 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     @Override
     public String toModelName(String name) {
         // Note: backslash ("\\") is allowed for e.g. "\\DateTime"
-        name = name.replaceAll("[^\\w\\\\]+", "_");
+        name = name.replaceAll("[^\\w\\\\]+", "_"); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
 
         // remove dollar sign
         name = name.replaceAll("$", "");
@@ -357,6 +379,12 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     }
 
     @Override
+    public String toModelTestFilename(String name) {
+        // should be the same as the model name
+        return toModelName(name) + "Test";
+    }
+
+    @Override
     public String toOperationId(String operationId) {
         // throw exception if method name is empty
         if (StringUtils.isEmpty(operationId)) {
@@ -369,6 +397,53 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         }
 
         return camelize(sanitizeName(operationId), true);
+    }
+
+    /**
+     * Return the default value of the property
+     *
+     * @param p Swagger property object
+     * @return string presentation of the default value of the property
+     */
+    @Override
+    public String toDefaultValue(Property p) {
+        if (p instanceof StringProperty) {
+            StringProperty dp = (StringProperty) p;
+            if (dp.getDefault() != null) {
+                return "'" + dp.getDefault().toString() + "'";
+            }
+        } else if (p instanceof BooleanProperty) {
+            BooleanProperty dp = (BooleanProperty) p;
+            if (dp.getDefault() != null) {
+                return dp.getDefault().toString();
+            }
+        } else if (p instanceof DateProperty) {
+            // TODO
+        } else if (p instanceof DateTimeProperty) {
+            // TODO
+        } else if (p instanceof DoubleProperty) {
+            DoubleProperty dp = (DoubleProperty) p;
+            if (dp.getDefault() != null) {
+                return dp.getDefault().toString();
+            }
+        } else if (p instanceof FloatProperty) {
+            FloatProperty dp = (FloatProperty) p;
+            if (dp.getDefault() != null) {
+                return dp.getDefault().toString();
+            }
+        } else if (p instanceof IntegerProperty) {
+            IntegerProperty dp = (IntegerProperty) p;
+            if (dp.getDefault() != null) {
+                return dp.getDefault().toString();
+            }
+        } else if (p instanceof LongProperty) {
+            LongProperty dp = (LongProperty) p;
+            if (dp.getDefault() != null) {
+                return dp.getDefault().toString();
+            }
+        }
+
+        return null;
     }
 
 }

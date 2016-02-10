@@ -1,10 +1,10 @@
 package io.swagger.petstore.test;
 
-import io.swagger.client.ApiClient;
-import io.swagger.client.ApiException;
-import io.swagger.client.Configuration;
+import com.google.gson.reflect.TypeToken;
 
-import io.swagger.client.ApiCallback;
+import io.swagger.TestUtils;
+
+import io.swagger.client.*;
 import io.swagger.client.api.*;
 import io.swagger.client.auth.*;
 import io.swagger.client.model.*;
@@ -12,6 +12,7 @@ import io.swagger.client.model.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,6 +73,38 @@ public class PetApiTest {
     }
 
     @Test
+    public void testCreateAndGetPetWithByteArray() throws Exception {
+        Pet pet = createRandomPet();
+        System.out.println(serializeJson(pet, api.getApiClient()));
+        byte[] bytes = serializeJson(pet, api.getApiClient()).getBytes();
+        api.addPetUsingByteArray(bytes);
+
+        byte[] fetchedBytes = api.getPetByIdWithByteArray(pet.getId());
+        System.out.println(new String(fetchedBytes));
+        Type type = new TypeToken<Pet>(){}.getType();
+        Pet fetched = deserializeJson(new String(fetchedBytes), type, api.getApiClient());
+        assertNotNull(fetched);
+        assertEquals(pet.getId(), fetched.getId());
+        assertNotNull(fetched.getCategory());
+        assertEquals(fetched.getCategory().getName(), pet.getCategory().getName());
+    }
+
+    @Test
+    public void testCreateAndGetPetWithHttpInfo() throws Exception {
+        Pet pet = createRandomPet();
+        api.addPetWithHttpInfo(pet);
+
+        ApiResponse<Pet> resp = api.getPetByIdWithHttpInfo(pet.getId());
+        assertEquals(200, resp.getStatusCode());
+        assertEquals("application/json", resp.getHeaders().get("Content-Type").get(0));
+        Pet fetched = resp.getData();
+        assertNotNull(fetched);
+        assertEquals(pet.getId(), fetched.getId());
+        assertNotNull(fetched.getCategory());
+        assertEquals(fetched.getCategory().getName(), pet.getCategory().getName());
+    }
+
+    @Test
     public void testCreateAndGetPetAsync() throws Exception {
         Pet pet = createRandomPet();
         api.addPet(pet);
@@ -87,6 +120,16 @@ public class PetApiTest {
             @Override
             public void onSuccess(Pet pet, int statusCode, Map<String, List<String>> responseHeaders) {
                 result.put("pet", pet);
+            }
+
+            @Override
+            public void onUploadProgress(long bytesWritten, long contentLength, boolean done) {
+                //empty
+            }
+
+            @Override
+            public void onDownloadProgress(long bytesRead, long contentLength, boolean done) {
+                //empty
             }
         });
         // the API call should be executed asynchronously, so result should be empty at the moment
@@ -122,6 +165,16 @@ public class PetApiTest {
             @Override
             public void onSuccess(Pet pet, int statusCode, Map<String, List<String>> responseHeaders) {
                 result.put("pet", pet);
+            }
+
+            @Override
+            public void onUploadProgress(long bytesWritten, long contentLength, boolean done) {
+                //empty
+            }
+
+            @Override
+            public void onDownloadProgress(long bytesRead, long contentLength, boolean done) {
+                //empty
             }
         });
         // the API call should be executed asynchronously, so result should be empty at the moment
@@ -252,9 +305,36 @@ public class PetApiTest {
         api.uploadFile(pet.getId(), "a test file", new File(file.getAbsolutePath()));
     }
 
+    @Test
+    public void testEqualsAndHashCode() {
+        Pet pet1 = new Pet();
+        Pet pet2 = new Pet();
+        assertTrue(pet1.equals(pet2));
+        assertTrue(pet2.equals(pet1));
+        assertTrue(pet1.hashCode() == pet2.hashCode());
+        assertTrue(pet1.equals(pet1));
+        assertTrue(pet1.hashCode() == pet1.hashCode());
+
+        pet2.setName("really-happy");
+        pet2.setPhotoUrls(Arrays.asList(new String[]{"http://foo.bar.com/1", "http://foo.bar.com/2"}));
+        assertFalse(pet1.equals(pet2));
+        assertFalse(pet2.equals(pet1));
+        assertFalse(pet1.hashCode() == (pet2.hashCode()));
+        assertTrue(pet2.equals(pet2));
+        assertTrue(pet2.hashCode() == pet2.hashCode());
+
+        pet1.setName("really-happy");
+        pet1.setPhotoUrls(Arrays.asList(new String[]{"http://foo.bar.com/1", "http://foo.bar.com/2"}));
+        assertTrue(pet1.equals(pet2));
+        assertTrue(pet2.equals(pet1));
+        assertTrue(pet1.hashCode() == pet2.hashCode());
+        assertTrue(pet1.equals(pet1));
+        assertTrue(pet1.hashCode() == pet1.hashCode());
+    }
+
     private Pet createRandomPet() {
         Pet pet = new Pet();
-        pet.setId(System.currentTimeMillis());
+        pet.setId(TestUtils.nextId());
         pet.setName("gorilla");
 
         Category category = new Category();
@@ -266,5 +346,13 @@ public class PetApiTest {
         pet.setPhotoUrls(photos);
 
         return pet;
+    }
+
+    private String serializeJson(Object o, ApiClient apiClient) {
+        return apiClient.getJSON().serialize(o);
+    }
+
+    private <T> T deserializeJson(String json, Type type, ApiClient apiClient) {
+        return (T) apiClient.getJSON().deserialize(json, type);
     }
 }
