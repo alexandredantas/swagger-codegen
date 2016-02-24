@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenConfig {
+
     protected String invokerPackage = "io.swagger.api";
     protected String groupId = "io.swagger";
     protected String artifactId = "swagger-jaxrs-server";
@@ -49,7 +50,6 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
         additionalProperties.put("artifactVersion", artifactVersion);
         additionalProperties.put("title", title);
 
-
         languageSpecificPrimitives = new HashSet<String>(
                 Arrays.asList(
                         "String",
@@ -76,16 +76,19 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
 
     @Override
     public void postProcessModelProperty(CodegenModel model, CodegenProperty property) {
-        super.postProcessModelProperty(model, property); 
-        model.imports.clear();
+        super.postProcessModelProperty(model, property);
+        model.imports.remove("ToStringSerializer");
+        model.imports.remove("JsonSerialize");
+        model.imports.remove("ApiModelProperty");
+        model.imports.remove("ApiModel");
+        model.imports.remove("JsonProperty");
+        model.imports.remove("JsonValue");
     }
-    
-    
 
     @Override
     public void processOpts() {
         super.processOpts();
-        
+
         // optional jackson mappings for BigDecimal support
         importMapping.remove("ToStringSerializer");
         importMapping.remove("JsonSerialize");
