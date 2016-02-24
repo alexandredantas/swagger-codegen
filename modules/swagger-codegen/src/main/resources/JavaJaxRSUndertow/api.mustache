@@ -19,7 +19,9 @@ import javax.ws.rs.*;
 {{#operations}}
 public class {{classname}}  {
 
-   private final {{classname}}Service delegate = {{classname}}ServiceFactory.get{{classname}}();
+    private final {{classname}}Service delegate(){ 
+        return {{classname}}ServiceFactory.get{{classname}}();
+    }
 
 {{#operation}}
     {{#subresourceOperation}}@Path("{{path}}"){{/subresourceOperation}}
@@ -28,7 +30,7 @@ public class {{classname}}  {
     {{#hasProduces}}@Produces({ {{#produces}}"{{mediaType}}"{{#hasMore}}, {{/hasMore}}{{/produces}} }){{/hasProduces}}
     public Response {{nickname}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{#hasMore}},{{/hasMore}}{{/allParams}})
     throws NotFoundException {
-        return delegate.{{nickname}}({{#allParams}}{{#isFile}}inputStream, fileDetail{{/isFile}}{{^isFile}}{{paramName}}{{/isFile}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
+        return delegate().{{nickname}}({{#allParams}}{{#isFile}}inputStream, fileDetail{{/isFile}}{{^isFile}}{{paramName}}{{/isFile}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
     }
 {{/operation}}
 

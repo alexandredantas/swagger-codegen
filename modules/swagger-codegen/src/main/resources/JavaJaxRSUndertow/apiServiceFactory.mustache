@@ -5,9 +5,7 @@ import {{package}}.impl.{{classname}}ServiceImpl;
 
 public class {{classname}}ServiceFactory {
 
-   private final static {{classname}}Service service = new {{classname}}ServiceImpl();
-
-   public static {{classname}}Service get{{classname}}(){
-      return service;
-   }
+    public static {{classname}}Service get{{classname}}(){
+        return new {{classname}}ServiceImpl();
+    }
 }
