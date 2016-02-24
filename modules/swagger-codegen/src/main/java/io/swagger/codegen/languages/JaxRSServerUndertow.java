@@ -1,7 +1,9 @@
 package io.swagger.codegen.languages;
 
 import io.swagger.codegen.CodegenConfig;
+import io.swagger.codegen.CodegenModel;
 import io.swagger.codegen.CodegenOperation;
+import io.swagger.codegen.CodegenProperty;
 import io.swagger.codegen.CodegenType;
 import io.swagger.codegen.SupportingFile;
 import io.swagger.models.Operation;
@@ -73,8 +75,26 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
     }
 
     @Override
+    public void postProcessModelProperty(CodegenModel model, CodegenProperty property) {
+        super.postProcessModelProperty(model, property); 
+        model.imports.clear();
+    }
+    
+    
+
+    @Override
     public void processOpts() {
         super.processOpts();
+        
+        // optional jackson mappings for BigDecimal support
+        importMapping.remove("ToStringSerializer");
+        importMapping.remove("JsonSerialize");
+
+        // imports for pojos
+        importMapping.remove("ApiModelProperty");
+        importMapping.remove("ApiModel");
+        importMapping.remove("JsonProperty");
+        importMapping.remove("JsonValue");
 
         supportingFiles.clear();
         supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
