@@ -19,7 +19,7 @@ import javax.ws.rs.*;
 {{#operations}}
 public class {{classname}}  {
 
-    private final {{classname}}Service delegate(){ 
+    private {{classname}}Service delegate(){ 
         return {{classname}}ServiceFactory.get{{classname}}();
     }
 
