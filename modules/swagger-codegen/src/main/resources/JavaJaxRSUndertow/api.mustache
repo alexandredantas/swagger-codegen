@@ -1,5 +1,6 @@
 package {{package}};
 
+import javax.inject.Inject;
 import {{modelPackage}}.*;
 import {{package}}.{{classname}}Service;
 import {{package}}.factories.{{classname}}ServiceFactory;
@@ -19,8 +20,11 @@ import javax.ws.rs.*;
 {{#operations}}
 public class {{classname}}  {
 
+    @Inject
+    private {{classname}}ServiceFactory factory;
+
     private {{classname}}Service delegate(){ 
-        return {{classname}}ServiceFactory.get{{classname}}();
+        return factory.get{{classname}}();
     }
 
 {{#operation}}

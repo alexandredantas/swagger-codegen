@@ -27,14 +27,17 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
     protected String artifactVersion = "1.0.0";
     protected String title = "Swagger Server";
     private Set<String> apiClasses;
+    private String resourcesFolder;
 
     public JaxRSServerUndertow() {
         super.processOpts();
 
         this.apiClasses = new HashSet<String>();
+        resourcesFolder = projectFolder + File.separator + "resources";
         sourceFolder = "src/gen/java";
+        
 
-        outputFolder = System.getProperty("swagger.codegen.jaxrs.genfolder", "generated-code/javaJaxRS");
+        outputFolder = System.getProperty("swagger.codegen.jaxrs.genfolder", "generated-code/javaJaxRSUndertow");
         modelTemplateFiles.put("model.mustache", ".java");
         apiTemplateFiles.put("api.mustache", ".java");
         apiTemplateFiles.put("apiService.mustache", ".java");
@@ -100,6 +103,8 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
         importMapping.remove("JsonValue");
 
         supportingFiles.clear();
+        supportingFiles.add(new SupportingFile("beans.mustache", resourcesFolder + 
+                File.separator + "META-INF", "beans.xml"));
         supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
         supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
         supportingFiles.add(new SupportingFile("ApiException.mustache",

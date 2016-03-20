@@ -73,6 +73,36 @@
             <version>${genson-version}</version>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.jetty.alpn</groupId>
+            <artifactId>alpn-api</artifactId>
+            <version>${alpn-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.servlet</groupId>
+            <artifactId>weld-servlet</artifactId>
+            <version>${weld-servlet-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>${javax-el-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>${javax-inject-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-cdi</artifactId>
+            <version>${resteasy-cdi-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+            <version>${jsp-api-version}</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit-version}</version>
@@ -94,7 +124,13 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <resteasy-undertow-version>3.0.14.Final</resteasy-undertow-version>
+        <resteasy-cdi-version>3.0.16.Final</resteasy-cdi-version>
+        <jsp-api-version>2.2</jsp-api-version>
+        <javax-inject-version>1</javax-inject-version>
+        <javax-el-version>3.0.1-b04</javax-el-version>
+        <weld-servlet-version>3.0.0.Alpha1</weld-servlet-version>
         <undertow-version>1.3.14.Final</undertow-version>
+        <alpn-version>1.1.2.v20150522</alpn-version>
         <genson-version>1.3</genson-version>
         <junit-version>4.12</junit-version>
     </properties>
