@@ -35,7 +35,7 @@ public class Startup {
         String trustStorePath = System.getenv(TRUSTSTORE_PATH);
         
         boolean enableHttps = System.getenv(ENABLE_HTTPS) != null ? 
-                Boolean.parseBoolean(System.getenv(HTTPS_PORT_PROPERTY)) : false;
+                Boolean.parseBoolean(System.getenv(ENABLE_HTTPS)) : false;
         
         int httpPort = Integer.parseInt(httpPortValue);
         
