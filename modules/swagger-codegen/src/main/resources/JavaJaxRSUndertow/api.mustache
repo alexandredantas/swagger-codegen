@@ -20,8 +20,16 @@ import javax.ws.rs.*;
 {{#operations}}
 public class {{classname}}  {
 
+    private final {{classname}}ServiceFactory factory;
+
+    public {{classname}}() {
+        this(null);
+    }
+
     @Inject
-    private {{classname}}ServiceFactory factory;
+    public {{classname}}({{classname}}Factory factory) {
+        this.factory = factory;
+    }
 
     private {{classname}}Service delegate(){ 
         return factory.get{{classname}}();
