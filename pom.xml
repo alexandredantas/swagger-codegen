@@ -531,7 +531,7 @@
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
-            <uniqueVersion>true</uniqueVersion>
+            <uniqueVersion>false</uniqueVersion>
             <url>http://fdnserverqa.no-ip.info/artifactory/ext-snapshot-local/</url>
         </snapshotRepository>
     </distributionManagement>
