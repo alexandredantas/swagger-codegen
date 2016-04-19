@@ -1,0 +1,22 @@
+import org.jboss.weld.environment.se.Weld;
+import org.jboss.weld.environment.se.WeldContainer;
+
+public class WeldContext {
+
+    public static final WeldContext INSTANCE = new WeldContext();
+
+    private final WeldContainer container;
+
+    private WeldContext() {
+        Weld weld = new Weld();
+        container = weld.initialize();
+    }
+
+    public <T> T getBean(Class<T> type) {
+        return container.instance().select(type).get();
+    }
+
+    public WeldContainer getContainer() {
+        return container;
+    }
+}

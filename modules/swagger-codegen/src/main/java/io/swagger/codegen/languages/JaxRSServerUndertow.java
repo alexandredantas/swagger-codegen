@@ -28,14 +28,19 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
     protected String title = "Swagger Server";
     private Set<String> apiClasses;
     private String resourcesFolder;
+    private String testFolder;
+    private String testResourcesFolder;
+    private String testSourceFolder;
 
     public JaxRSServerUndertow() {
         super.processOpts();
 
         this.apiClasses = new HashSet<String>();
         resourcesFolder = projectFolder + File.separator + "resources";
+        testFolder = "src" + File.separator + "test";
+        testSourceFolder = testFolder + File.separator + "java";
+        testResourcesFolder = testFolder + File.separator + "resources";
         sourceFolder = "src/gen/java";
-        
 
         outputFolder = System.getProperty("swagger.codegen.jaxrs.genfolder", "generated-code/javaJaxRSUndertow");
         modelTemplateFiles.put("model.mustache", ".java");
@@ -103,8 +108,16 @@ public class JaxRSServerUndertow extends JavaClientCodegen implements CodegenCon
         importMapping.remove("JsonValue");
 
         supportingFiles.clear();
-        supportingFiles.add(new SupportingFile("beans.mustache", resourcesFolder + 
-                File.separator + "META-INF", "beans.xml"));
+        supportingFiles.add(new SupportingFile("beans.mustache", resourcesFolder
+                + File.separator + "META-INF", "beans.xml"));
+        supportingFiles.add(new SupportingFile("beans.mustache", testResourcesFolder
+                + File.separator + "META-INF", "beans.xml"));
+        supportingFiles.add(new SupportingFile("Mocked.mustache", testSourceFolder,
+                "Mocked.java"));
+        supportingFiles.add(new SupportingFile("WeldContext.mustache", testSourceFolder,
+                "WeldContext.java"));
+        supportingFiles.add(new SupportingFile("WeldJUnit4Runner.mustache", testSourceFolder,
+                "WeldJUnit4Runner.java"));
         supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
         supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
         supportingFiles.add(new SupportingFile("ApiException.mustache",
