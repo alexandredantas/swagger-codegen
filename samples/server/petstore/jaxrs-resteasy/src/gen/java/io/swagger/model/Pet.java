@@ -1,18 +1,17 @@
 package io.swagger.model;
 
 import java.util.Objects;
+import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.model.Category;
 import io.swagger.model.Tag;
-import java.util.*;
+import java.util.List;
 
 
 
 
-
-
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaResteasyServerCodegen", date = "2016-02-04T01:58:20.368+07:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaResteasyServerCodegen", date = "2016-06-16T10:34:51.577+02:00")
 public class Pet   {
   
   private Long id = null;
@@ -21,12 +20,15 @@ public class Pet   {
   private List<String> photoUrls = new ArrayList<String>();
   private List<Tag> tags = new ArrayList<Tag>();
 
-
+  /**
+   * pet status in the store
+   */
   public enum StatusEnum {
     AVAILABLE("available"),
-    PENDING("pending"),
-    SOLD("sold");
 
+        PENDING("pending"),
+
+        SOLD("sold");
     private String value;
 
     StatusEnum(String value) {
@@ -36,13 +38,12 @@ public class Pet   {
     @Override
     @JsonValue
     public String toString() {
-      return value;
+      return String.valueOf(value);
     }
   }
 
   private StatusEnum status = null;
 
-  
   /**
    **/
   
@@ -54,7 +55,6 @@ public class Pet   {
     this.id = id;
   }
 
-  
   /**
    **/
   
@@ -66,7 +66,6 @@ public class Pet   {
     this.category = category;
   }
 
-  
   /**
    **/
   
@@ -78,7 +77,6 @@ public class Pet   {
     this.name = name;
   }
 
-  
   /**
    **/
   
@@ -90,7 +88,6 @@ public class Pet   {
     this.photoUrls = photoUrls;
   }
 
-  
   /**
    **/
   
@@ -102,7 +99,6 @@ public class Pet   {
     this.tags = tags;
   }
 
-  
   /**
    * pet status in the store
    **/
@@ -115,7 +111,6 @@ public class Pet   {
     this.status = status;
   }
 
-  
 
   @Override
   public boolean equals(Object o) {
@@ -165,6 +160,4 @@ public class Pet   {
     return o.toString().replace("\n", "\n    ");
   }
 }
-
-
 

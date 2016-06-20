@@ -3,6 +3,9 @@ package io.swagger.codegen.languages;
 import io.swagger.codegen.CliOption;
 import io.swagger.codegen.CodegenConfig;
 import io.swagger.codegen.CodegenConstants;
+import io.swagger.codegen.CodegenOperation;
+import io.swagger.codegen.CodegenParameter;
+import io.swagger.codegen.CodegenProperty;
 import io.swagger.codegen.CodegenType;
 import io.swagger.codegen.DefaultCodegen;
 import io.swagger.codegen.SupportingFile;
@@ -11,6 +14,8 @@ import io.swagger.models.properties.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 
@@ -29,30 +34,39 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     public static final String COMPOSER_VENDOR_NAME = "composerVendorName";
     public static final String COMPOSER_PROJECT_NAME = "composerProjectName";
     protected String invokerPackage = "Swagger\\Client";
-    protected String composerVendorName = "swagger";
-    protected String composerProjectName = "swagger-client";
+    protected String composerVendorName = null;
+    protected String composerProjectName = null;
     protected String packagePath = "SwaggerClient-php";
-    protected String artifactVersion = "1.0.0";
+    protected String artifactVersion = null;
     protected String srcBasePath = "lib";
+    protected String testBasePath = "test";
+    protected String docsBasePath = "docs";
+    protected String apiDirName = "Api";
+    protected String modelDirName = "Model";
     protected String variableNamingConvention= "snake_case";
+    protected String apiDocPath = docsBasePath + "/" + apiDirName;
+    protected String modelDocPath = docsBasePath + "/" + modelDirName;
 
     public PhpClientCodegen() {
         super();
 
+        supportsInheritance = true;
         outputFolder = "generated-code" + File.separator + "php";
         modelTemplateFiles.put("model.mustache", ".php");
         apiTemplateFiles.put("api.mustache", ".php");
         modelTestTemplateFiles.put("model_test.mustache", ".php");
         apiTestTemplateFiles.put("api_test.mustache", ".php");
         embeddedTemplateDir = templateDir = "php";
-        apiPackage = invokerPackage + "\\Api";
-        modelPackage = invokerPackage + "\\Model";
-        testPackage = invokerPackage + "\\Tests";
+        apiPackage = invokerPackage + "\\" + apiDirName;
+        modelPackage = invokerPackage + "\\" + modelDirName;
 
-        reservedWords = new HashSet<String>(
+        modelDocTemplateFiles.put("model_doc.mustache", ".md");
+        apiDocTemplateFiles.put("api_doc.mustache", ".md");
+
+        setReservedWordsLowerCase(
                 Arrays.asList(
                     // local variables used in api methods (endpoints)
-                    "resourcePath", "method", "httpBody", "queryParams", "headerParams",
+                    "resourcePath", "httpBody", "queryParams", "headerParams",
                     "formParams", "_header_accept", "_tempBody",
 
                     // PHP reserved words
@@ -89,6 +103,7 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         typeMapping = new HashMap<String, String>();
         typeMapping.put("integer", "int");
         typeMapping.put("long", "int");
+        typeMapping.put("number", "float");
         typeMapping.put("float", "float");
         typeMapping.put("double", "double");
         typeMapping.put("string", "string");
@@ -101,7 +116,9 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         typeMapping.put("array", "array");
         typeMapping.put("list", "array");
         typeMapping.put("object", "object");
-        typeMapping.put("binary", "ByteArray");
+        typeMapping.put("binary", "string");
+        typeMapping.put("ByteArray", "string");
+        typeMapping.put("UUID", "string");
 
         cliOptions.add(new CliOption(CodegenConstants.MODEL_PACKAGE, CodegenConstants.MODEL_PACKAGE_DESC));
         cliOptions.add(new CliOption(CodegenConstants.API_PACKAGE, CodegenConstants.API_PACKAGE_DESC));
@@ -110,8 +127,10 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         cliOptions.add(new CliOption(CodegenConstants.INVOKER_PACKAGE, "The main namespace to use for all classes. e.g. Yay\\Pets"));
         cliOptions.add(new CliOption(PACKAGE_PATH, "The main package name for classes. e.g. GeneratedPetstore"));
         cliOptions.add(new CliOption(SRC_BASE_PATH, "The directory under packagePath to serve as source root."));
-        cliOptions.add(new CliOption(COMPOSER_VENDOR_NAME, "The vendor name used in the composer package name. The template uses {{composerVendorName}}/{{composerProjectName}} for the composer package name. e.g. yaypets"));
-        cliOptions.add(new CliOption(COMPOSER_PROJECT_NAME, "The project name used in the composer package name. The template uses {{composerVendorName}}/{{composerProjectName}} for the composer package name. e.g. petstore-client"));
+        cliOptions.add(new CliOption(COMPOSER_VENDOR_NAME, "The vendor name used in the composer package name. The template uses {{composerVendorName}}/{{composerProjectName}} for the composer package name. e.g. yaypets. IMPORTANT NOTE (2016/03): composerVendorName will be deprecated and replaced by gitUserId in the next swagger-codegen release"));
+        cliOptions.add(new CliOption(CodegenConstants.GIT_USER_ID, CodegenConstants.GIT_USER_ID_DESC));
+        cliOptions.add(new CliOption(COMPOSER_PROJECT_NAME, "The project name used in the composer package name. The template uses {{composerVendorName}}/{{composerProjectName}} for the composer package name. e.g. petstore-client. IMPORTANT NOTE (2016/03): composerProjectName will be deprecated and replaced by gitRepoId in the next swagger-codegen release"));
+        cliOptions.add(new CliOption(CodegenConstants.GIT_REPO_ID, CodegenConstants.GIT_REPO_ID_DESC));
         cliOptions.add(new CliOption(CodegenConstants.ARTIFACT_VERSION, "The version to use in the composer package version field. e.g. 1.2.3"));
     }
 
@@ -149,6 +168,15 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     }
 
     @Override
+    public String escapeText(String input) {
+        if (input != null) {
+            // Trim the string to avoid leading and trailing spaces.
+            return super.escapeText(input).trim();
+        }
+        return input;
+    }
+
+    @Override
     public CodegenType getTag() {
         return CodegenType.CLIENT;
     }
@@ -178,13 +206,13 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         } else {
             additionalProperties.put(SRC_BASE_PATH, srcBasePath);
         }
-        
+
         if (additionalProperties.containsKey(CodegenConstants.INVOKER_PACKAGE)) {
             this.setInvokerPackage((String) additionalProperties.get(CodegenConstants.INVOKER_PACKAGE));
         } else {
             additionalProperties.put(CodegenConstants.INVOKER_PACKAGE, invokerPackage);
         }
-        
+
         if (!additionalProperties.containsKey(CodegenConstants.MODEL_PACKAGE)) {
             additionalProperties.put(CodegenConstants.MODEL_PACKAGE, modelPackage);
         }
@@ -192,19 +220,31 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         if (!additionalProperties.containsKey(CodegenConstants.API_PACKAGE)) {
             additionalProperties.put(CodegenConstants.API_PACKAGE, apiPackage);
         }
-                
+
         if (additionalProperties.containsKey(COMPOSER_PROJECT_NAME)) {
             this.setComposerProjectName((String) additionalProperties.get(COMPOSER_PROJECT_NAME));
         } else {
             additionalProperties.put(COMPOSER_PROJECT_NAME, composerProjectName);
         }
-        
+
+        if (additionalProperties.containsKey(CodegenConstants.GIT_USER_ID)) {
+            this.setGitUserId((String) additionalProperties.get(CodegenConstants.GIT_USER_ID));
+        } else {
+            additionalProperties.put(CodegenConstants.GIT_USER_ID, gitUserId);
+        }
+
         if (additionalProperties.containsKey(COMPOSER_VENDOR_NAME)) {
             this.setComposerVendorName((String) additionalProperties.get(COMPOSER_VENDOR_NAME));
         } else {
             additionalProperties.put(COMPOSER_VENDOR_NAME, composerVendorName);
         }
-        
+
+        if (additionalProperties.containsKey(CodegenConstants.GIT_REPO_ID)) {
+            this.setGitRepoId((String) additionalProperties.get(CodegenConstants.GIT_REPO_ID));
+        } else {
+            additionalProperties.put(CodegenConstants.GIT_REPO_ID, gitRepoId);
+        }
+
         if (additionalProperties.containsKey(CodegenConstants.ARTIFACT_VERSION)) {
             this.setArtifactVersion((String) additionalProperties.get(CodegenConstants.ARTIFACT_VERSION));
         } else {
@@ -214,8 +254,15 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         if (additionalProperties.containsKey(VARIABLE_NAMING_CONVENTION)) {
             this.setParameterNamingConvention((String) additionalProperties.get(VARIABLE_NAMING_CONVENTION));
         }
-        
+
         additionalProperties.put("escapedInvokerPackage", invokerPackage.replace("\\", "\\\\"));
+
+        // make api and model doc path available in mustache template
+        additionalProperties.put("apiDocPath", apiDocPath);
+        additionalProperties.put("modelDocPath", modelDocPath);
+
+        // make test path available in mustache template
+        additionalProperties.put("testBasePath", testBasePath);
 
         supportingFiles.add(new SupportingFile("configuration.mustache", toPackagePath(invokerPackage, srcBasePath), "Configuration.php"));
         supportingFiles.add(new SupportingFile("ApiClient.mustache", toPackagePath(invokerPackage, srcBasePath), "ApiClient.php"));
@@ -223,6 +270,11 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         supportingFiles.add(new SupportingFile("ObjectSerializer.mustache", toPackagePath(invokerPackage, srcBasePath), "ObjectSerializer.php"));
         supportingFiles.add(new SupportingFile("composer.mustache", getPackagePath(), "composer.json"));
         supportingFiles.add(new SupportingFile("autoload.mustache", getPackagePath(), "autoload.php"));
+        supportingFiles.add(new SupportingFile("README.mustache", getPackagePath(), "README.md"));
+        supportingFiles.add(new SupportingFile(".travis.yml", getPackagePath(), ".travis.yml"));
+        supportingFiles.add(new SupportingFile("git_push.sh.mustache", getPackagePath(), "git_push.sh"));
+        // apache v2 license
+        supportingFiles.add(new SupportingFile("LICENSE", getPackagePath(), "LICENSE"));
     }
 
     @Override
@@ -242,12 +294,32 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
 
     @Override
     public String apiTestFileFolder() {
-        return (outputFolder + "/" + toPackagePath(testPackage, srcBasePath));
+        return (outputFolder + "/" + getPackagePath() + "/" + testBasePath + "/" + apiDirName);
     }
 
     @Override
     public String modelTestFileFolder() {
-        return (outputFolder + "/" + toPackagePath(testPackage, srcBasePath));
+        return (outputFolder + "/" + getPackagePath() + "/" + testBasePath + "/" + modelDirName);
+    }
+
+    @Override
+    public String apiDocFileFolder() {
+        return (outputFolder + "/" + getPackagePath() + "/" + apiDocPath);
+    }
+
+    @Override
+    public String modelDocFileFolder() {
+        return (outputFolder + "/" + getPackagePath() + "/" + modelDocPath);
+    }
+
+    @Override
+    public String toModelDocFilename(String name) {
+        return toModelName(name);
+    }
+
+    @Override
+    public String toApiDocFilename(String name) {
+        return toApiName(name);
     }
 
     @Override
@@ -299,7 +371,7 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     public void setInvokerPackage(String invokerPackage) {
         this.invokerPackage = invokerPackage;
     }
-        
+
     public void setArtifactVersion(String artifactVersion) {
         this.artifactVersion = artifactVersion;
     }
@@ -311,7 +383,7 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     public void setSrcBasePath(String srcBasePath) {
         this.srcBasePath = srcBasePath;
     }
-    
+
     public void setParameterNamingConvention(String variableNamingConvention) {
         this.variableNamingConvention = variableNamingConvention;
     }
@@ -319,7 +391,7 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
     public void setComposerVendorName(String composerVendorName) {
         this.composerVendorName = composerVendorName;
     }
-    
+
     public void setComposerProjectName(String composerProjectName) {
         this.composerProjectName = composerProjectName;
     }
@@ -356,6 +428,9 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
 
     @Override
     public String toModelName(String name) {
+        // remove [ 
+        name = name.replaceAll("\\]", "");
+
         // Note: backslash ("\\") is allowed for e.g. "\\DateTime"
         name = name.replaceAll("[^\\w\\\\]+", "_"); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
 
@@ -363,10 +438,22 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         name = name.replaceAll("$", "");
 
         // model name cannot use reserved keyword
-        if (reservedWords.contains(name)) {
-            escapeReservedWord(name); // e.g. return => _return
+        if (isReservedWord(name)) {
+            LOGGER.warn(name + " (reserved word) cannot be used as model name. Renamed to " + camelize("model_" + name));
+            name = "model_" + name; // e.g. return => ModelReturn (after camelize)
         }
 
+        // model name starts with number
+        if (name.matches("^\\d.*")) {
+            LOGGER.warn(name + " (model name starts with number) cannot be used as model name. Renamed to " + camelize("model_" + name));
+            name = "model_" + name; // e.g. 200Response => Model200Response (after camelize)
+        }
+
+        // add prefix and/or suffic only if name does not start wth \ (e.g. \DateTime)
+        if (!name.matches("^\\\\.*")) {
+            name = modelNamePrefix + name + modelNameSuffix;
+        }
+        
         // camelize the model name
         // phone_number => PhoneNumber
         return camelize(name);
@@ -392,8 +479,9 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         }
 
         // method name cannot use reserved keyword, e.g. return
-        if (reservedWords.contains(operationId)) {
-            throw new RuntimeException(operationId + " (reserved word) cannot be used as method name");
+        if (isReservedWord(operationId)) {
+            LOGGER.warn(operationId + " (reserved word) cannot be used as method name. Renamed to " + camelize(sanitizeName("call_" + operationId), true));
+            operationId = "call_" + operationId;
         }
 
         return camelize(sanitizeName(operationId), true);
@@ -446,4 +534,132 @@ public class PhpClientCodegen extends DefaultCodegen implements CodegenConfig {
         return null;
     }
 
+    @Override
+    public void setParameterExampleValue(CodegenParameter p) {
+        String example;
+
+        if (p.defaultValue == null) {
+            example = p.example;
+        } else {
+            example = p.defaultValue;
+        }
+
+        String type = p.baseType;
+        if (type == null) {
+            type = p.dataType;
+        }
+
+        if ("String".equalsIgnoreCase(type)) {
+            if (example == null) {
+                example = p.paramName + "_example";
+            }
+            example = "\"" + escapeText(example) + "\"";
+        } else if ("Integer".equals(type) || "int".equals(type)) {
+            if (example == null) {
+                example = "56";
+            }
+        } else if ("Float".equalsIgnoreCase(type) || "Double".equalsIgnoreCase(type)) {
+            if (example == null) {
+                example = "3.4";
+            }
+        } else if ("BOOLEAN".equalsIgnoreCase(type) || "bool".equalsIgnoreCase(type)) {
+            if (example == null) {
+                example = "True";
+            }
+        } else if ("\\SplFileObject".equalsIgnoreCase(type)) {
+            if (example == null) {
+                example = "/path/to/file";
+            }
+            example = "\"" + escapeText(example) + "\"";
+        } else if ("Date".equalsIgnoreCase(type)) {
+            if (example == null) {
+                example = "2013-10-20";
+            }
+            example = "new \\DateTime(\"" + escapeText(example) + "\")";
+        } else if ("DateTime".equalsIgnoreCase(type)) {
+            if (example == null) {
+                example = "2013-10-20T19:20:30+01:00";
+            }
+            example = "new \\DateTime(\"" + escapeText(example) + "\")";
+        } else if (!languageSpecificPrimitives.contains(type)) {
+            // type is a model class, e.g. User
+            example = "new " + type + "()";
+        } else {
+            LOGGER.warn("Type " + type + " not handled properly in setParameterExampleValue");
+        }
+
+        if (example == null) {
+            example = "NULL";
+        } else if (Boolean.TRUE.equals(p.isListContainer)) {
+            example = "array(" + example + ")";
+        } else if (Boolean.TRUE.equals(p.isMapContainer)) {
+            example = "array('key' => " + example + ")";
+        }
+
+        p.example = example;
+    }
+
+    @Override
+    public String toEnumValue(String value, String datatype) {
+        if ("int".equals(datatype) || "double".equals(datatype) || "float".equals(datatype)) {
+            return value;
+        } else {
+            return "\'" + escapeText(value) + "\'";
+        }
+    }
+
+    @Override
+    public String toEnumDefaultValue(String value, String datatype) {
+        return datatype + "_" + value;
+    }
+
+    @Override
+    public String toEnumVarName(String name, String datatype) {
+        // number
+        if ("int".equals(datatype) || "double".equals(datatype) || "float".equals(datatype)) {
+            String varName = new String(name);
+            varName = varName.replaceAll("-", "MINUS_");
+            varName = varName.replaceAll("\\+", "PLUS_");
+            varName = varName.replaceAll("\\.", "_DOT_");
+            return varName;
+        }
+
+        // string
+        String enumName = sanitizeName(underscore(name).toUpperCase());
+        enumName = enumName.replaceFirst("^_", "");
+        enumName = enumName.replaceFirst("_$", "");
+
+        if (enumName.matches("\\d.*")) { // starts with number
+            return "_" + enumName;
+        } else {
+            return enumName;
+        }
+    }
+
+    @Override
+    public String toEnumName(CodegenProperty property) {
+        String enumName = underscore(toModelName(property.name)).toUpperCase();
+
+        if (enumName.matches("\\d.*")) { // starts with number
+            return "_" + enumName;
+        } else {
+            return enumName;
+        }
+    }
+
+    @Override
+    public Map<String, Object> postProcessModels(Map<String, Object> objs) {
+        // process enum in models
+        return postProcessModelsEnum(objs);
+    }
+
+    @Override
+    public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
+        Map<String, Object> operations = (Map<String, Object>) objs.get("operations");
+        List<CodegenOperation> operationList = (List<CodegenOperation>) operations.get("operation");
+        for (CodegenOperation op : operationList) {
+            op.vendorExtensions.put("x-testOperationId", camelize(op.operationId));
+        }
+        return objs;
+    }
 }

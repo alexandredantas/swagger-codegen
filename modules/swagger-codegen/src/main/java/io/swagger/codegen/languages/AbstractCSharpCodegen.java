@@ -2,7 +2,7 @@ package io.swagger.codegen.languages;
 
 import io.swagger.codegen.*;
 import io.swagger.models.properties.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +12,8 @@ import java.util.*;
 public abstract class AbstractCSharpCodegen extends DefaultCodegen implements CodegenConfig {
 
     protected boolean optionalAssemblyInfoFlag = true;
-    protected boolean optionalProjectFileFlag = false;
+    protected boolean optionalProjectFileFlag = true;
+    protected boolean optionalEmitDefaultValue = false;
     protected boolean optionalMethodArgumentFlag = true;
     protected boolean useDateTimeOffsetFlag = false;
     protected boolean useCollection = false;
@@ -20,7 +21,12 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
 
     protected String packageVersion = "1.0.0";
     protected String packageName = "IO.Swagger";
-    protected String sourceFolder = "src" + File.separator + packageName;
+
+    protected String sourceFolder = "src";
+
+    // TODO: Add option for test folder output location. Nice to allow e.g. ./test instead of ./src.
+    //       This would require updating relative paths (e.g. path to main project file in test project file)
+    protected String testFolder = sourceFolder;
 
     protected Set<String> collectionTypes;
     protected Set<String> mapTypes;
@@ -44,12 +50,14 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
                 Arrays.asList("IDictionary")
         );
 
-        reservedWords = new HashSet<String>(
+        setReservedWordsLowerCase(
                 Arrays.asList(
                         // local variable names in API methods (endpoints)
-                        "path_", "pathParams", "queryParams", "headerParams", "formParams", "fileParams",
-                        "postBody", "http_header_accepts", "http_header_accept", "apiKeyValue", "response",
-                        "statusCode",
+                        "localVarPath", "localVarPathParams", "localVarQueryParams", "localVarHeaderParams", 
+                        "localVarFormParams", "localVarFileParams", "localVarStatusCode", "localVarResponse",
+                        "localVarPostBody", "localVarHttpHeaderAccepts", "localVarHttpHeaderAccept",
+                        "localVarHttpContentTypes", "localVarHttpContentType",
+                        "localVarStatusCode",
                         // C# reserved words
                         "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",
                         "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
@@ -69,6 +77,7 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
                         "string",
                         "bool?",
                         "double?",
+                        "decimal?",
                         "int?",
                         "long?",
                         "float?",
@@ -85,7 +94,8 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
                         "Int32",
                         "Int64",
                         "Float",
-                        "Stream", // not really a primitive, we include it to avoid model import
+                        "Guid?",
+                        "System.IO.Stream", // not really a primitive, we include it to avoid model import
                         "Object")
         );
 
@@ -97,23 +107,29 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
         typeMapping = new HashMap<String, String>();
         typeMapping.put("string", "string");
         typeMapping.put("binary", "byte[]");
+        typeMapping.put("bytearray", "byte[]");
         typeMapping.put("boolean", "bool?");
         typeMapping.put("integer", "int?");
         typeMapping.put("float", "float?");
         typeMapping.put("long", "long?");
         typeMapping.put("double", "double?");
-        typeMapping.put("number", "double?");
+        typeMapping.put("number", "decimal?");
         typeMapping.put("datetime", "DateTime?");
         typeMapping.put("date", "DateTime?");
-        typeMapping.put("file", "Stream");
+        typeMapping.put("file", "System.IO.Stream");
         typeMapping.put("array", "List");
         typeMapping.put("list", "List");
         typeMapping.put("map", "Dictionary");
         typeMapping.put("object", "Object");
+        typeMapping.put("uuid", "Guid?");
     }
 
     public void setReturnICollection(boolean returnICollection) {
         this.returnICollection = returnICollection;
+    }
+
+    public void setOptionalEmitDefaultValue(boolean optionalEmitDefaultValue) {
+        this.optionalEmitDefaultValue = optionalEmitDefaultValue;
     }
 
     public void setUseCollection(boolean useCollection) {
@@ -187,6 +203,10 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
         if (additionalProperties.containsKey(CodegenConstants.RETURN_ICOLLECTION)) {
             setReturnICollection(Boolean.valueOf(additionalProperties.get(CodegenConstants.RETURN_ICOLLECTION).toString()));
         }
+
+        if (additionalProperties.containsKey(CodegenConstants.OPTIONAL_EMIT_DEFAULT_VALUES)) {
+            setOptionalEmitDefaultValue(Boolean.valueOf(additionalProperties.get(CodegenConstants.OPTIONAL_EMIT_DEFAULT_VALUES).toString()));
+        }
     }
 
     @Override
@@ -204,7 +224,8 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
                 }
             }
         }
-        return objs;
+        // process enum in models
+        return postProcessModelsEnum(objs);
     }
 
     @Override
@@ -258,12 +279,12 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
 
     @Override
     public String apiFileFolder() {
-        return outputFolder + File.separator + sourceFolder + File.separator + apiPackage().replace('.', File.separatorChar);
+        return outputFolder + File.separator + sourceFolder + File.separator + packageName + File.separator + apiPackage();
     }
 
     @Override
     public String modelFileFolder() {
-        return outputFolder + File.separator + sourceFolder + File.separator + modelPackage().replace('.', File.separatorChar);
+        return outputFolder + File.separator + sourceFolder + File.separator + packageName + File.separator + modelPackage();
     }
 
     @Override
@@ -274,14 +295,15 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
 
     @Override
     public String toOperationId(String operationId) {
-        // throw exception if method name is empty
+        // throw exception if method name is empty (should not occur as an auto-generated method name will be used)
         if (StringUtils.isEmpty(operationId)) {
             throw new RuntimeException("Empty method name (operationId) not allowed");
         }
 
         // method name cannot use reserved keyword, e.g. return
-        if (reservedWords.contains(operationId)) {
-            throw new RuntimeException(operationId + " (reserved word) cannot be used as method name");
+        if (isReservedWord(operationId)) {
+            LOGGER.warn(operationId + " (reserved word) cannot be used as method name. Renamed to " + camelize(sanitizeName("call_" + operationId)));
+            operationId = "call_" + operationId;
         }
 
         return camelize(sanitizeName(operationId));
@@ -290,7 +312,7 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
     @Override
     public String toVarName(String name) {
         // sanitize name
-        name = sanitizeName(name); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
+        name = sanitizeName(name);
 
         // if it's all uppper case, do nothing
         if (name.matches("^[A-Z_]*$")) {
@@ -302,7 +324,7 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
         name = camelize(name);
 
         // for reserved word or word starting with number, append _
-        if (reservedWords.contains(name) || name.matches("^\\d.*")) {
+        if (isReservedWord(name) || name.matches("^\\d.*")) {
             name = escapeReservedWord(name);
         }
 
@@ -311,6 +333,9 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
 
     @Override
     public String toParamName(String name) {
+        // sanitize name
+        name = sanitizeName(name);
+
         // replace - with _ e.g. created-at => created_at
         name = name.replaceAll("-", "_");
 
@@ -324,7 +349,7 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
         name = camelize(name, true);
 
         // for reserved word or word starting with number, append _
-        if (reservedWords.contains(name) || name.matches("^\\d.*")) {
+        if (isReservedWord(name) || name.matches("^\\d.*")) {
             name = escapeReservedWord(name);
         }
 
@@ -413,7 +438,7 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
         } else if (p instanceof FloatProperty) {
             FloatProperty dp = (FloatProperty) p;
             if (dp.getDefault() != null) {
-                return dp.getDefault().toString();
+                return String.format("%1$sF", dp.getDefault());
             }
         } else if (p instanceof IntegerProperty) {
             IntegerProperty dp = (IntegerProperty) p;
@@ -462,11 +487,26 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
 
     @Override
     public String toModelName(String name) {
+        if (!StringUtils.isEmpty(modelNamePrefix)) {
+            name = modelNamePrefix + "_" + name;
+        }
+
+        if (!StringUtils.isEmpty(modelNameSuffix)) {
+            name = name + "_" + modelNameSuffix;
+        }
+
         name = sanitizeName(name);
 
         // model name cannot use reserved keyword, e.g. return
-        if (reservedWords.contains(name)) {
-            throw new RuntimeException(name + " (reserved word) cannot be used as a model name");
+        if (isReservedWord(name)) {
+            LOGGER.warn(name + " (reserved word) cannot be used as model name. Renamed to " + camelize("model_" + name));
+            name = "model_" + name; // e.g. return => ModelReturn (after camelize)
+        }
+
+        // model name starts with number
+        if (name.matches("^\\d.*")) {
+            LOGGER.warn(name + " (model name starts with number) cannot be used as model name. Renamed to " + camelize("model_" + name));
+            name = "model_" + name; // e.g. 200Response => Model200Response (after camelize)
         }
 
         // camelize the model name
@@ -494,7 +534,6 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
         return toModelName(name) + "Tests";
     }
 
-
     public void setPackageName(String packageName) {
         this.packageName = packageName;
     }
@@ -505,5 +544,58 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
 
     public void setSourceFolder(String sourceFolder) {
         this.sourceFolder = sourceFolder;
+    }
+
+    @Override
+    public String toEnumVarName(String name, String datatype) {
+        String enumName = sanitizeName(name);
+
+        enumName = enumName.replaceFirst("^_", "");
+        enumName = enumName.replaceFirst("_$", "");
+
+        enumName = camelize(enumName) + "Enum";
+
+        LOGGER.info("toEnumVarName = " + enumName);
+
+        if (enumName.matches("\\d.*")) { // starts with number
+            return "_" + enumName;
+        } else {
+            return enumName;
+        }
+    }
+
+    @Override
+    public String toEnumName(CodegenProperty property) {
+        return sanitizeName(camelize(property.name)) + "Enum";
+    }
+
+    /*
+    @Override
+    public String toEnumName(CodegenProperty property) {
+        String enumName = sanitizeName(property.name);
+        if (!StringUtils.isEmpty(modelNamePrefix)) {
+            enumName = modelNamePrefix + "_" + enumName;
+        }
+
+        if (!StringUtils.isEmpty(modelNameSuffix)) {
+            enumName = enumName + "_" + modelNameSuffix;
+        }
+
+        // model name cannot use reserved keyword, e.g. return
+        if (isReservedWord(enumName)) {
+            LOGGER.warn(enumName + " (reserved word) cannot be used as model name. Renamed to " + camelize("model_" + enumName));
+            enumName = "model_" + enumName; // e.g. return => ModelReturn (after camelize)
+        }
+
+        if (enumName.matches("\\d.*")) { // starts with number
+            return "_" + enumName;
+        } else {
+            return enumName;
+        }
+    }
+    */
+
+    public String testPackageName() {
+        return this.packageName + ".Test";
     }
 }

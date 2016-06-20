@@ -1,15 +1,13 @@
 package io.swagger.model;
 
 import java.util.Objects;
+import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 
 
 
 
-
-
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaResteasyServerCodegen", date = "2016-02-04T01:58:20.368+07:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaResteasyServerCodegen", date = "2016-06-16T10:34:51.577+02:00")
 public class User   {
   
   private Long id = null;
@@ -21,7 +19,6 @@ public class User   {
   private String phone = null;
   private Integer userStatus = null;
 
-  
   /**
    **/
   
@@ -33,7 +30,6 @@ public class User   {
     this.id = id;
   }
 
-  
   /**
    **/
   
@@ -45,7 +41,6 @@ public class User   {
     this.username = username;
   }
 
-  
   /**
    **/
   
@@ -57,7 +52,6 @@ public class User   {
     this.firstName = firstName;
   }
 
-  
   /**
    **/
   
@@ -69,7 +63,6 @@ public class User   {
     this.lastName = lastName;
   }
 
-  
   /**
    **/
   
@@ -81,7 +74,6 @@ public class User   {
     this.email = email;
   }
 
-  
   /**
    **/
   
@@ -93,7 +85,6 @@ public class User   {
     this.password = password;
   }
 
-  
   /**
    **/
   
@@ -105,7 +96,6 @@ public class User   {
     this.phone = phone;
   }
 
-  
   /**
    * User Status
    **/
@@ -118,7 +108,6 @@ public class User   {
     this.userStatus = userStatus;
   }
 
-  
 
   @Override
   public boolean equals(Object o) {
@@ -172,6 +161,4 @@ public class User   {
     return o.toString().replace("\n", "\n    ");
   }
 }
-
-
 

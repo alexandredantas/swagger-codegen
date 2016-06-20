@@ -48,7 +48,7 @@ import io.swagger.client.auth.HttpBasicAuth;
 import io.swagger.client.auth.ApiKeyAuth;
 import io.swagger.client.auth.OAuth;
 
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-01-28T16:23:25.238+01:00")
+
 public class ApiClient {
   private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
   private String basePath = "http://petstore.swagger.io/v2";
@@ -80,12 +80,12 @@ public class ApiClient {
     this.json.setDateFormat((DateFormat) dateFormat.clone());
 
     // Set default User-Agent.
-    setUserAgent("Java-Swagger");
+    setUserAgent("Swagger-Codegen/1.0.0/java");
 
     // Setup authentications (key: authentication name, value: authentication).
     authentications = new HashMap<String, Authentication>();
-    authentications.put("petstore_auth", new OAuth());
     authentications.put("api_key", new ApiKeyAuth("header", "api_key"));
+    authentications.put("petstore_auth", new OAuth());
     // Prevent the authentications from being modified.
     authentications = Collections.unmodifiableMap(authentications);
   }
@@ -95,6 +95,15 @@ public class ApiClient {
    */
   public JSON getJSON() {
     return json;
+  }
+
+  public Client getHttpClient() {
+    return httpClient;
+  }
+
+  public ApiClient setHttpClient(Client httpClient) {
+    this.httpClient = httpClient;
+    return this;
   }
 
   public String getBasePath() {

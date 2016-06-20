@@ -9,15 +9,23 @@ import java.util.Map;
 
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest.AuthenticationRequestBuilder;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest.TokenRequestBuilder;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 import retrofit2.Converter;
 import retrofit2.Retrofit;
-import retrofit2.GsonConverterFactory;
-import retrofit2.RxJavaCallAdapterFactory;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
@@ -46,10 +54,10 @@ public class ApiClient {
         this();
         for(String authName : authNames) { 
             Interceptor auth;
-            if (authName == "petstore_auth") { 
-                auth = new OAuth(OAuthFlow.implicit, "http://petstore.swagger.io/api/oauth/dialog", "", "write:pets, read:pets");
-            } else if (authName == "api_key") { 
+            if (authName == "api_key") { 
                 auth = new ApiKeyAuth("header", "api_key");
+            } else if (authName == "petstore_auth") { 
+                auth = new OAuth(OAuthFlow.implicit, "http://petstore.swagger.io/api/oauth/dialog", "", "write:pets, read:pets");
             } else {
                 throw new RuntimeException("auth name \"" + authName + "\" not found in available auth names");
             }
@@ -102,14 +110,16 @@ public class ApiClient {
                 .setUsername(username)
                 .setPassword(password);
     }
-    
+
    public void createDefaultAdapter() {
         Gson gson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+                .registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter())
+                .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
                 .create();
 
         okClient = new OkHttpClient();
-        
+
         String baseUrl = "http://petstore.swagger.io/v2";
         if(!baseUrl.endsWith("/"))
         	baseUrl = baseUrl + "/";
@@ -119,12 +129,13 @@ public class ApiClient {
                 .baseUrl(baseUrl)
                 .client(okClient)
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonCustomConverterFactory.create(gson));
     }
 
     public <S> S createService(Class<S> serviceClass) {
         return adapterBuilder.build().create(serviceClass);
-        
+
     }
 
     /**
@@ -202,7 +213,7 @@ public class ApiClient {
             }
         }
     }
-    
+
     /**
      * Helper method to configure the oauth accessCode/implicit flow parameters
      * @param clientId
@@ -224,7 +235,7 @@ public class ApiClient {
             }
         }
     }
-    
+
     /**
      * Configures a listener which is notified when a new access token is received.
      * @param accessTokenListener
@@ -271,7 +282,7 @@ public class ApiClient {
     public OkHttpClient getOkClient() {
         return okClient;
     }
-    
+
     public void addAuthsToOkClient(OkHttpClient okClient) {
         for(Interceptor apiAuthorization : apiAuthorizations.values()) {
             okClient.interceptors().add(apiAuthorization);
@@ -307,14 +318,14 @@ class GsonResponseBodyConverterToString<T> implements Converter<ResponseBody, T>
 	    String returned = value.string();
 	    try {
 	      return gson.fromJson(returned, type);
-	    } 
+	    }
 	    catch (JsonParseException e) {
                 return (T) returned;
-        } 
+        }
 	 }
 }
 
-class GsonCustomConverterFactory extends Converter.Factory 
+class GsonCustomConverterFactory extends Converter.Factory
 {
 	public static GsonCustomConverterFactory create(Gson gson) {
 	    return new GsonCustomConverterFactory(gson);
@@ -338,8 +349,63 @@ class GsonCustomConverterFactory extends Converter.Factory
     }
 
     @Override
-    public Converter<?, RequestBody> requestBodyConverter(Type type, Annotation[] annotations, Retrofit retrofit) {
-            return gsonConverterFactory.requestBodyConverter(type, annotations, retrofit);
+    public Converter<?, RequestBody> requestBodyConverter(Type type, Annotation[] parameterAnnotations, Annotation[] methodAnnotations, Retrofit retrofit) {
+            return gsonConverterFactory.requestBodyConverter(type, parameterAnnotations, methodAnnotations, retrofit);
     }
 }
 
+
+/**
+ * Gson TypeAdapter for Joda DateTime type
+ */
+class DateTimeTypeAdapter extends TypeAdapter<DateTime> {
+
+    private final DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
+
+    @Override
+    public void write(JsonWriter out, DateTime date) throws IOException {
+        if (date == null) {
+            out.nullValue();
+        } else {
+            out.value(formatter.print(date));
+        }
+    }
+
+    @Override
+    public DateTime read(JsonReader in) throws IOException {
+        switch (in.peek()) {
+            case NULL:
+                in.nextNull();
+                return null;
+            default:
+                String date = in.nextString();
+                return formatter.parseDateTime(date);
+        }
+    }
+}
+
+class LocalDateTypeAdapter extends TypeAdapter<LocalDate> {
+
+    private final DateTimeFormatter formatter = ISODateTimeFormat.date();
+
+    @Override
+    public void write(JsonWriter out, LocalDate date) throws IOException {
+        if (date == null) {
+            out.nullValue();
+        } else {
+            out.value(formatter.print(date));
+        }
+    }
+
+    @Override
+    public LocalDate read(JsonReader in) throws IOException {
+        switch (in.peek()) {
+            case NULL:
+                in.nextNull();
+                return null;
+            default:
+                String date = in.nextString();
+                return formatter.parseLocalDate(date);
+        }
+    }
+}

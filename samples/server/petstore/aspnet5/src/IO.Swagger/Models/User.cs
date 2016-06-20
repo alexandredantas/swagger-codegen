@@ -18,61 +18,68 @@ namespace IO.Swagger.Models
         /// <summary>
         /// Initializes a new instance of the <see cref="User" /> class.
         /// </summary>
-        public User()
+        /// <param name="Id">Id.</param>
+        /// <param name="Username">Username.</param>
+        /// <param name="FirstName">FirstName.</param>
+        /// <param name="LastName">LastName.</param>
+        /// <param name="Email">Email.</param>
+        /// <param name="Password">Password.</param>
+        /// <param name="Phone">Phone.</param>
+        /// <param name="UserStatus">User Status.</param>
+        public User(long? Id = null, string Username = null, string FirstName = null, string LastName = null, string Email = null, string Password = null, string Phone = null, int? UserStatus = null)
         {
+            this.Id = Id;
+            this.Username = Username;
+            this.FirstName = FirstName;
+            this.LastName = LastName;
+            this.Email = Email;
+            this.Password = Password;
+            this.Phone = Phone;
+            this.UserStatus = UserStatus;
             
         }
 
-        
         /// <summary>
         /// Gets or Sets Id
         /// </summary>
         public long? Id { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets Username
         /// </summary>
         public string Username { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets FirstName
         /// </summary>
         public string FirstName { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets LastName
         /// </summary>
         public string LastName { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets Email
         /// </summary>
         public string Email { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets Password
         /// </summary>
         public string Password { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets Phone
         /// </summary>
         public string Phone { get; set; }
 
-        
         /// <summary>
         /// User Status
         /// </summary>
         /// <value>User Status</value>
         public int? UserStatus { get; set; }
 
-        
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -83,14 +90,13 @@ namespace IO.Swagger.Models
             var sb = new StringBuilder();
             sb.Append("class User {\n");
             sb.Append("  Id: ").Append(Id).Append("\n");
-            sb.Append("  Username: ").Append(Username).Append("\n");
-            sb.Append("  FirstName: ").Append(FirstName).Append("\n");
-            sb.Append("  LastName: ").Append(LastName).Append("\n");
-            sb.Append("  Email: ").Append(Email).Append("\n");
-            sb.Append("  Password: ").Append(Password).Append("\n");
-            sb.Append("  Phone: ").Append(Phone).Append("\n");
-            sb.Append("  UserStatus: ").Append(UserStatus).Append("\n");
-            
+sb.Append("  Username: ").Append(Username).Append("\n");
+sb.Append("  FirstName: ").Append(FirstName).Append("\n");
+sb.Append("  LastName: ").Append(LastName).Append("\n");
+sb.Append("  Email: ").Append(Email).Append("\n");
+sb.Append("  Password: ").Append(Password).Append("\n");
+sb.Append("  Phone: ").Append(Phone).Append("\n");
+sb.Append("  UserStatus: ").Append(UserStatus).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -182,31 +188,22 @@ namespace IO.Swagger.Models
             {
                 int hash = 41;
                 // Suitable nullity checks etc, of course :)
-                
                     if (this.Id != null)
                     hash = hash * 59 + this.Id.GetHashCode();
-                
                     if (this.Username != null)
                     hash = hash * 59 + this.Username.GetHashCode();
-                
                     if (this.FirstName != null)
                     hash = hash * 59 + this.FirstName.GetHashCode();
-                
                     if (this.LastName != null)
                     hash = hash * 59 + this.LastName.GetHashCode();
-                
                     if (this.Email != null)
                     hash = hash * 59 + this.Email.GetHashCode();
-                
                     if (this.Password != null)
                     hash = hash * 59 + this.Password.GetHashCode();
-                
                     if (this.Phone != null)
                     hash = hash * 59 + this.Phone.GetHashCode();
-                
                     if (this.UserStatus != null)
                     hash = hash * 59 + this.UserStatus.GetHashCode();
-                
                 return hash;
             }
         }

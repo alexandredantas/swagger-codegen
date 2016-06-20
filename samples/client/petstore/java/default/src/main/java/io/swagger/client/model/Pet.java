@@ -1,5 +1,6 @@
 package io.swagger.client.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -7,13 +8,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.client.model.Category;
 import io.swagger.client.model.Tag;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
+/**
+ * Pet
+ */
 
-
-
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-01-15T19:19:23.415+08:00")
 public class Pet   {
   
   private Long id = null;
@@ -22,7 +24,9 @@ public class Pet   {
   private List<String> photoUrls = new ArrayList<String>();
   private List<Tag> tags = new ArrayList<Tag>();
 
-
+  /**
+   * pet status in the store
+   */
   public enum StatusEnum {
     AVAILABLE("available"),
     PENDING("pending"),
@@ -37,7 +41,7 @@ public class Pet   {
     @Override
     @JsonValue
     public String toString() {
-      return value;
+      return String.valueOf(value);
     }
   }
 
@@ -46,8 +50,12 @@ public class Pet   {
   
   /**
    **/
+  public Pet id(Long id) {
+    this.id = id;
+    return this;
+  }
   
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   @JsonProperty("id")
   public Long getId() {
     return id;
@@ -56,11 +64,15 @@ public class Pet   {
     this.id = id;
   }
 
-  
+
   /**
    **/
+  public Pet category(Category category) {
+    this.category = category;
+    return this;
+  }
   
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   @JsonProperty("category")
   public Category getCategory() {
     return category;
@@ -69,11 +81,15 @@ public class Pet   {
     this.category = category;
   }
 
-  
+
   /**
    **/
+  public Pet name(String name) {
+    this.name = name;
+    return this;
+  }
   
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "doggie", required = true, value = "")
   @JsonProperty("name")
   public String getName() {
     return name;
@@ -82,11 +98,15 @@ public class Pet   {
     this.name = name;
   }
 
-  
+
   /**
    **/
+  public Pet photoUrls(List<String> photoUrls) {
+    this.photoUrls = photoUrls;
+    return this;
+  }
   
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   @JsonProperty("photoUrls")
   public List<String> getPhotoUrls() {
     return photoUrls;
@@ -95,11 +115,15 @@ public class Pet   {
     this.photoUrls = photoUrls;
   }
 
-  
+
   /**
    **/
+  public Pet tags(List<Tag> tags) {
+    this.tags = tags;
+    return this;
+  }
   
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   @JsonProperty("tags")
   public List<Tag> getTags() {
     return tags;
@@ -108,12 +132,16 @@ public class Pet   {
     this.tags = tags;
   }
 
-  
+
   /**
    * pet status in the store
    **/
+  public Pet status(StatusEnum status) {
+    this.status = status;
+    return this;
+  }
   
-  @ApiModelProperty(value = "pet status in the store")
+  @ApiModelProperty(example = "null", value = "pet status in the store")
   @JsonProperty("status")
   public StatusEnum getStatus() {
     return status;
@@ -122,7 +150,6 @@ public class Pet   {
     this.status = status;
   }
 
-  
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -133,14 +160,12 @@ public class Pet   {
       return false;
     }
     Pet pet = (Pet) o;
-
-    return true && Objects.equals(id, pet.id) &&
-        Objects.equals(category, pet.category) &&
-        Objects.equals(name, pet.name) &&
-        Objects.equals(photoUrls, pet.photoUrls) &&
-        Objects.equals(tags, pet.tags) &&
-        Objects.equals(status, pet.status)
-    ;
+    return Objects.equals(this.id, pet.id) &&
+        Objects.equals(this.category, pet.category) &&
+        Objects.equals(this.name, pet.name) &&
+        Objects.equals(this.photoUrls, pet.photoUrls) &&
+        Objects.equals(this.tags, pet.tags) &&
+        Objects.equals(this.status, pet.status);
   }
 
   @Override

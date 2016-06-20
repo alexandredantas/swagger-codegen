@@ -8,12 +8,14 @@ import java.util.TreeSet;
 import java.util.*;
 import java.io.File;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class JavascriptClosureAngularClientCodegen extends DefaultCodegen implements CodegenConfig {
     public JavascriptClosureAngularClientCodegen() {
         super();
 
         supportsInheritance = false;
-        reservedWords = new HashSet<String>(Arrays.asList("abstract",
+        setReservedWordsLowerCase(Arrays.asList("abstract",
             "continue", "for", "new", "switch", "assert", "default", "if",
             "package", "synchronized", "do", "goto", "private",
             "this", "break", "double", "implements", "protected", "throw",
@@ -77,7 +79,7 @@ public class JavascriptClosureAngularClientCodegen extends DefaultCodegen implem
 
     @Override
     public String getHelp() {
-        return "Generates a Javascript AngularJS client library annotated with Google Closure Compiler annotations" +
+        return "Generates a Javascript AngularJS client library (beta) annotated with Google Closure Compiler annotations" +
             "(https://developers.google.com/closure/compiler/docs/js-for-compiler?hl=en)";
     }
 
@@ -114,7 +116,7 @@ public class JavascriptClosureAngularClientCodegen extends DefaultCodegen implem
         name = camelize(name, true);
 
         // for reserved word or word starting with number, append _
-        if (reservedWords.contains(name) || name.matches("^\\d.*"))
+        if (isReservedWord(name) || name.matches("^\\d.*"))
             name = escapeReservedWord(name);
 
         return name;
@@ -128,10 +130,19 @@ public class JavascriptClosureAngularClientCodegen extends DefaultCodegen implem
 
     @Override
     public String toModelName(String name) {
+        if (!StringUtils.isEmpty(modelNamePrefix)) {
+            name = modelNamePrefix + "_" + name;
+        }
+
+        if (!StringUtils.isEmpty(modelNameSuffix)) {
+            name = name + "_" + modelNameSuffix;
+        }
+
         // model name cannot use reserved keyword, e.g. return
-        if (reservedWords.contains(name))
-            throw new RuntimeException(name
-                    + " (reserved word) cannot be used as a model name");
+        if (isReservedWord(name)) {
+            LOGGER.warn(name + " (reserved word) cannot be used as model name. Renamed to " + camelize("model_" + name));
+            name = "model_" + name; // e.g. return => ModelReturn (after camelize)
+        }
 
         // camelize the model name
         // phone_number => PhoneNumber

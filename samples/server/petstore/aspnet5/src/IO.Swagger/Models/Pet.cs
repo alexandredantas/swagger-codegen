@@ -18,49 +18,70 @@ namespace IO.Swagger.Models
         /// <summary>
         /// Initializes a new instance of the <see cref="Pet" /> class.
         /// </summary>
-        public Pet()
+        /// <param name="Id">Id.</param>
+        /// <param name="Category">Category.</param>
+        /// <param name="Name">Name (required).</param>
+        /// <param name="PhotoUrls">PhotoUrls (required).</param>
+        /// <param name="Tags">Tags.</param>
+        /// <param name="Status">pet status in the store.</param>
+        public Pet(long? Id = null, Category Category = null, string Name = null, List<string> PhotoUrls = null, List<Tag> Tags = null, string Status = null)
         {
+            // to ensure "Name" is required (not null)
+            if (Name == null)
+            {
+                throw new InvalidDataException("Name is a required property for Pet and cannot be null");
+            }
+            else
+            {
+                this.Name = Name;
+            }
+            // to ensure "PhotoUrls" is required (not null)
+            if (PhotoUrls == null)
+            {
+                throw new InvalidDataException("PhotoUrls is a required property for Pet and cannot be null");
+            }
+            else
+            {
+                this.PhotoUrls = PhotoUrls;
+            }
+            this.Id = Id;
+            this.Category = Category;
+            this.Tags = Tags;
+            this.Status = Status;
             
         }
 
-        
         /// <summary>
         /// Gets or Sets Id
         /// </summary>
         public long? Id { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets Category
         /// </summary>
         public Category Category { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets Name
         /// </summary>
         public string Name { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets PhotoUrls
         /// </summary>
         public List<string> PhotoUrls { get; set; }
 
-        
         /// <summary>
         /// Gets or Sets Tags
         /// </summary>
         public List<Tag> Tags { get; set; }
 
-        
         /// <summary>
         /// pet status in the store
         /// </summary>
         /// <value>pet status in the store</value>
         public string Status { get; set; }
 
-        
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -71,12 +92,11 @@ namespace IO.Swagger.Models
             var sb = new StringBuilder();
             sb.Append("class Pet {\n");
             sb.Append("  Id: ").Append(Id).Append("\n");
-            sb.Append("  Category: ").Append(Category).Append("\n");
-            sb.Append("  Name: ").Append(Name).Append("\n");
-            sb.Append("  PhotoUrls: ").Append(PhotoUrls).Append("\n");
-            sb.Append("  Tags: ").Append(Tags).Append("\n");
-            sb.Append("  Status: ").Append(Status).Append("\n");
-            
+sb.Append("  Category: ").Append(Category).Append("\n");
+sb.Append("  Name: ").Append(Name).Append("\n");
+sb.Append("  PhotoUrls: ").Append(PhotoUrls).Append("\n");
+sb.Append("  Tags: ").Append(Tags).Append("\n");
+sb.Append("  Status: ").Append(Status).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -158,25 +178,18 @@ namespace IO.Swagger.Models
             {
                 int hash = 41;
                 // Suitable nullity checks etc, of course :)
-                
                     if (this.Id != null)
                     hash = hash * 59 + this.Id.GetHashCode();
-                
                     if (this.Category != null)
                     hash = hash * 59 + this.Category.GetHashCode();
-                
                     if (this.Name != null)
                     hash = hash * 59 + this.Name.GetHashCode();
-                
                     if (this.PhotoUrls != null)
                     hash = hash * 59 + this.PhotoUrls.GetHashCode();
-                
                     if (this.Tags != null)
                     hash = hash * 59 + this.Tags.GetHashCode();
-                
                     if (this.Status != null)
                     hash = hash * 59 + this.Status.GetHashCode();
-                
                 return hash;
             }
         }

@@ -1,16 +1,16 @@
 package io.swagger.client.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 
+/**
+ * Category
+ */
 
-
-
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-01-28T16:23:25.238+01:00")
 public class Category   {
   
   private Long id = null;
@@ -19,8 +19,12 @@ public class Category   {
   
   /**
    **/
+  public Category id(Long id) {
+    this.id = id;
+    return this;
+  }
   
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   @JsonProperty("id")
   public Long getId() {
     return id;
@@ -29,11 +33,15 @@ public class Category   {
     this.id = id;
   }
 
-  
+
   /**
    **/
+  public Category name(String name) {
+    this.name = name;
+    return this;
+  }
   
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   @JsonProperty("name")
   public String getName() {
     return name;
@@ -42,7 +50,6 @@ public class Category   {
     this.name = name;
   }
 
-  
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -53,10 +60,8 @@ public class Category   {
       return false;
     }
     Category category = (Category) o;
-
-    return true && Objects.equals(id, category.id) &&
-        Objects.equals(name, category.name)
-    ;
+    return Objects.equals(this.id, category.id) &&
+        Objects.equals(this.name, category.name);
   }
 
   @Override
